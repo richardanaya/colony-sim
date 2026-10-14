@@ -2,8 +2,9 @@ import * as THREE from "three";
 import type { Colony, Side, WallKind } from "../types";
 import { geometryFrom, pushQuad } from "./geometry";
 import { loadTexture } from "./materials";
+import { ISORIM } from "./paths";
 
-const ASSET = "/assets/isorim/textures";
+const ASSET = `${ISORIM}/textures`;
 const WALL_H = 1.2;
 const SIDE_TEX_H = 1.25;
 

@@ -1,5 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
-import { devPort, previewPort } from "./tests/targets";
+import { devPort, previewPort } from "./tests/targets.mjs";
 
 export default defineConfig({
   testDir: "tests",
@@ -31,7 +31,7 @@ export default defineConfig({
       timeout: 60_000,
     },
     {
-      command: `npm run build && npm run preview -- --host 127.0.0.1 --port ${previewPort} --strictPort`,
+      command: `npm run build && node tests/serve-built.mjs`,
       url: `http://127.0.0.1:${previewPort}`,
       reuseExistingServer: false,
       timeout: 180_000,

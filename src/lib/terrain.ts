@@ -2,8 +2,9 @@ import * as THREE from "three";
 import type { Colony, TerrainKind } from "../types";
 import { geometryFrom, pushQuad } from "./geometry";
 import { loadTexture } from "./materials";
+import { ISORIM } from "./paths";
 
-const ASSET = "/assets/isorim/textures";
+const ASSET = `${ISORIM}/textures`;
 
 interface TerrainStyle {
   file: string;

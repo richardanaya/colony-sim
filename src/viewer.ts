@@ -7,8 +7,9 @@ import { instantiate, parseObj, type LoadedModel } from "./lib/obj";
 import { buildStructures, cameraFaces, type CutawayPiece } from "./lib/structures";
 import { buildTerrain } from "./lib/terrain";
 import type { Colony, Prop } from "./types";
+import { ISORIM } from "./lib/paths";
 
-const MODEL_URL = "/assets/isorim/models";
+const MODEL_URL = `${ISORIM}/models`;
 
 export function mount(root: HTMLElement): void {
   const colony = createColony();

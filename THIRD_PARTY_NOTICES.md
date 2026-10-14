@@ -2,13 +2,13 @@
 
 ## IsoRim
 
-Colony art — Wavefront `.obj` models and PNG textures under `public/assets/isorim/` — comes from IsoRim by kndzio:
+Colony art — Wavefront `.obj` models and PNG textures under `assets/isorim/` — comes from IsoRim by kndzio:
 
 https://github.com/kndzio/IsoRim
 
 IsoRim is a visual mod that draws RimWorld with an isometric camera. Its own readme notes that the project was created with the use of AI and that credit is not required to use the art. The repository is also MIT-licensed, so the license text is included here.
 
-The models used in this viewer were taken from `Models.7z` in that repository. IsoRim does not ship a separate `.mtl` file in the archive; material colours and swatch names were read from `tools/make_models.py` and stored in `src/data/materials.json`. Textures were copied from `Textures/IsoRim/`. Formats and the file list are in `public/assets/isorim/README.md`.
+The models used in this viewer were taken from `Models.7z` in that repository. IsoRim does not ship a separate `.mtl` file in the archive; material colours and swatch names were read from `tools/make_models.py` and stored in `src/data/materials.json`. Textures were copied from `Textures/IsoRim/`. Formats and the file list are in `assets/isorim/README.md`.
 
 ```
 MIT License
