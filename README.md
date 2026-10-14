@@ -17,6 +17,7 @@ Other scripts:
 
 - `npm run build` typechecks and writes `dist/`
 - `npm run preview` serves that build locally
+- `npm test` runs a headless Playwright smoke test against the dev server and the production preview. It fails if the console reports an error or warning, if any request fails, or if the canvas does not render. Install the browser once with `npx playwright install chromium`.
 
 ## Controls
 
