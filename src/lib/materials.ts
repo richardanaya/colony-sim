@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import catalog from "../data/materials.json";
 import type { Stuff } from "../types";
+import { ISORIM } from "./paths";
 
 interface MatDef {
   color: [number, number, number];
@@ -19,7 +20,7 @@ export const STUFF_TINT: Record<Stuff, THREE.Color> = {
   Fabric: new THREE.Color(0.9, 0.88, 0.84),
 };
 
-const ASSET = "/assets/isorim";
+const ASSET = ISORIM;
 
 export class MaterialLibrary {
   private readonly textures = new Map<string, THREE.Texture>();

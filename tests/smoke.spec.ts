@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { PNG } from "pngjs";
-import { smokeTargets } from "./targets";
+import { smokeTargets } from "./targets.mjs";
 
 for (const target of smokeTargets) {
   test(`${target.name} renders with a clean console and no failed requests`, async ({ page }) => {
@@ -22,7 +22,12 @@ for (const target of smokeTargets) {
     page.on("response", (response) => {
       const url = response.url();
       const status = response.status();
-      if (url.includes("/assets/isorim/") || url.endsWith(".obj") || url.endsWith(".png") || url.includes("favicon")) {
+      if (
+        url.includes("/assets/") ||
+        url.endsWith(".obj") ||
+        url.endsWith(".png") ||
+        url.includes("favicon")
+      ) {
         assetStatus.set(url, status);
       }
       if (status >= 400) problems.push(`HTTP ${status}: ${url}`);
@@ -46,8 +51,17 @@ for (const target of smokeTargets) {
     const urls = [...assetStatus.keys()];
     expect(urls.some((url) => url.endsWith("/assets/isorim/models/bed.obj"))).toBe(true);
     expect(urls.some((url) => url.endsWith("/assets/isorim/textures/ground/Grass.png"))).toBe(true);
+    if (target.name === "pages") {
+      expect(urls.every((url) => url.includes("/colony-sim/"))).toBe(true);
+    }
     for (const [url, status] of assetStatus) {
       expect(status, url).toBeLessThan(400);
+    }
+
+    if (target.relativeBundle) {
+      const html = await page.content();
+      expect(html).toContain('src="./assets/index');
+      expect(html).not.toContain("/src/main.ts");
     }
 
     expect(problems, problems.join("\n")).toEqual([]);

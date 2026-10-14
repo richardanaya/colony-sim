@@ -15,9 +15,11 @@ Open the URL Vite prints (usually http://localhost:5173/).
 
 Other scripts:
 
-- `npm run build` typechecks and writes `dist/`
+- `npm run build` typechecks, writes `dist/`, and refreshes the root `index.html` plus the hashed files in `assets/` that GitHub Pages serves
 - `npm run preview` serves that build locally
-- `npm test` runs a headless Playwright smoke test against the dev server and the production preview. It fails if the console reports an error or warning, if any request fails, or if the canvas does not render. Install the browser once with `npx playwright install chromium`.
+- `npm test` runs a headless Playwright smoke test against the dev server, the production preview, and a static copy of the repo root mounted at `/colony-sim/`. It fails if the console reports an error or warning, if any request fails, or if the canvas does not render. Install the browser once with `npx playwright install chromium`.
+
+GitHub Pages serves this repository root as https://richardanaya.github.io/colony-sim/ with no extra base path. `npm run dev` still opens the TypeScript app (`index.dev.html`). The committed root `index.html` is the Vite build, and its script, style, and IsoRim URLs are relative (`./assets/...`) so they resolve under `/colony-sim/`.
 
 ## Controls
 
@@ -31,7 +33,7 @@ Other scripts:
 
 ## Assets
 
-IsoRim models are Wavefront `.obj` (one unit = one cell). Textures are PNG. See `public/assets/isorim/README.md` and `THIRD_PARTY_NOTICES.md`.
+IsoRim models are Wavefront `.obj` (one unit = one cell). Textures are PNG. See `assets/isorim/README.md` and `THIRD_PARTY_NOTICES.md`.
 
 ## Limitations
 
