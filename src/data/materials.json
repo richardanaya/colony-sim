@@ -1,0 +1,512 @@
+{
+  "an_dark": {
+    "color": [
+      0.11,
+      0.1,
+      0.1
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "ash": {
+    "color": [
+      0.3,
+      0.28,
+      0.27
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "bark": {
+    "color": [
+      0.44,
+      0.31,
+      0.21
+    ],
+    "map": "Bark",
+    "tint": false,
+    "emissive": false
+  },
+  "bark_birch": {
+    "color": [
+      0.92,
+      0.91,
+      0.86
+    ],
+    "map": "Bark",
+    "tint": false,
+    "emissive": false
+  },
+  "bark_dark": {
+    "color": [
+      0.3,
+      0.22,
+      0.17
+    ],
+    "map": "Bark",
+    "tint": false,
+    "emissive": false
+  },
+  "bark_mark": {
+    "color": [
+      0.21,
+      0.2,
+      0.19
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "battery": {
+    "color": [
+      0.38,
+      0.42,
+      0.46
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "berry": {
+    "color": [
+      0.33,
+      0.43,
+      0.82
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "blanket": {
+    "color": [
+      0.44,
+      0.52,
+      0.64
+    ],
+    "map": "Fabric",
+    "tint": false,
+    "emissive": false
+  },
+  "book_blue": {
+    "color": [
+      0.22,
+      0.36,
+      0.58
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "book_red": {
+    "color": [
+      0.62,
+      0.22,
+      0.18
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "charge": {
+    "color": [
+      0.45,
+      0.9,
+      1.0
+    ],
+    "map": "Glow",
+    "tint": false,
+    "emissive": true
+  },
+  "cloth_roll": {
+    "color": [
+      0.72,
+      0.56,
+      0.34
+    ],
+    "map": "Fabric",
+    "tint": false,
+    "emissive": false
+  },
+  "ember": {
+    "color": [
+      0.96,
+      0.42,
+      0.18
+    ],
+    "map": "Glow",
+    "tint": false,
+    "emissive": true
+  },
+  "flame": {
+    "color": [
+      1.0,
+      0.9,
+      0.48
+    ],
+    "map": "Flame",
+    "tint": false,
+    "emissive": true
+  },
+  "flame_core": {
+    "color": [
+      1.0,
+      0.95,
+      0.72
+    ],
+    "map": "Glow",
+    "tint": false,
+    "emissive": true
+  },
+  "gun_dark": {
+    "color": [
+      0.2,
+      0.2,
+      0.22
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "gun_light": {
+    "color": [
+      0.66,
+      0.68,
+      0.7
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "gun_metal": {
+    "color": [
+      0.36,
+      0.37,
+      0.4
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_birch": {
+    "color": [
+      0.52,
+      0.64,
+      0.3
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_birch_dk": {
+    "color": [
+      0.3848,
+      0.4864,
+      0.24
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_birch_lt": {
+    "color": [
+      0.624,
+      0.7424,
+      0.318
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_oak": {
+    "color": [
+      0.38,
+      0.54,
+      0.25
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_oak_dk": {
+    "color": [
+      0.2812,
+      0.4104,
+      0.2
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_oak_lt": {
+    "color": [
+      0.456,
+      0.6264,
+      0.265
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_pine": {
+    "color": [
+      0.23,
+      0.41,
+      0.25
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_pine_dk": {
+    "color": [
+      0.1702,
+      0.3116,
+      0.2
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_pine_lt": {
+    "color": [
+      0.276,
+      0.4756,
+      0.265
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "linen": {
+    "color": [
+      0.9,
+      0.88,
+      0.82
+    ],
+    "map": "Fabric",
+    "tint": false,
+    "emissive": false
+  },
+  "log": {
+    "color": [
+      0.5,
+      0.34,
+      0.21
+    ],
+    "map": "Wood",
+    "tint": false,
+    "emissive": false
+  },
+  "log_burnt": {
+    "color": [
+      0.2,
+      0.16,
+      0.14
+    ],
+    "map": "Wood",
+    "tint": false,
+    "emissive": false
+  },
+  "metal": {
+    "color": [
+      0.6,
+      0.62,
+      0.65
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "metal_dark": {
+    "color": [
+      0.32,
+      0.33,
+      0.36
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "paper": {
+    "color": [
+      0.92,
+      0.9,
+      0.82
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "pillow": {
+    "color": [
+      0.98,
+      0.97,
+      0.94
+    ],
+    "map": "Fabric",
+    "tint": false,
+    "emissive": false
+  },
+  "shrub": {
+    "color": [
+      0.42,
+      0.53,
+      0.25
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "shrub_dark": {
+    "color": [
+      0.31,
+      0.44,
+      0.22
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "soil": {
+    "color": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "map": "Soil",
+    "tint": false,
+    "emissive": false
+  },
+  "solar": {
+    "color": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "map": "Solar",
+    "tint": false,
+    "emissive": false
+  },
+  "solar_frame": {
+    "color": [
+      0.7,
+      0.72,
+      0.75
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "stone": {
+    "color": [
+      0.54,
+      0.54,
+      0.55
+    ],
+    "map": "Stone",
+    "tint": false,
+    "emissive": false
+  },
+  "stuff": {
+    "color": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "map": "{stuff}",
+    "tint": true,
+    "emissive": false
+  },
+  "stuff_dark": {
+    "color": [
+      0.8,
+      0.8,
+      0.8
+    ],
+    "map": "{stuff}",
+    "tint": true,
+    "emissive": false
+  },
+  "stuff_deep": {
+    "color": [
+      0.62,
+      0.62,
+      0.62
+    ],
+    "map": "{stuff}",
+    "tint": true,
+    "emissive": false
+  },
+  "stuff_plain": {
+    "color": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "map": null,
+    "tint": true,
+    "emissive": false
+  },
+  "stuff_plain_dark": {
+    "color": [
+      0.8,
+      0.8,
+      0.8
+    ],
+    "map": null,
+    "tint": true,
+    "emissive": false
+  },
+  "stuff_rock": {
+    "color": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "map": "Rock",
+    "tint": true,
+    "emissive": false
+  },
+  "terminal": {
+    "color": [
+      0.92,
+      0.8,
+      0.24
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "twig_bark": {
+    "color": [
+      0.44,
+      0.31,
+      0.21
+    ],
+    "map": "Bark",
+    "tint": false,
+    "emissive": false
+  },
+  "twig_bark_birch": {
+    "color": [
+      0.92,
+      0.91,
+      0.86
+    ],
+    "map": "Bark",
+    "tint": false,
+    "emissive": false
+  },
+  "water_dark": {
+    "color": [
+      0.2,
+      0.34,
+      0.4
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  }
+}

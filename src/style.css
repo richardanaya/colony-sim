@@ -1,0 +1,71 @@
+:root {
+  color: #f4efe4;
+  font-family: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
+  background: #c5d0b4;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+#app {
+  position: relative;
+}
+
+canvas {
+  display: block;
+}
+
+#hud {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  max-width: 280px;
+  padding: 12px 14px 10px;
+  background: rgba(28, 26, 22, 0.72);
+  border-radius: 8px;
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+#hud h1 {
+  margin: 0 0 2px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+#hud p {
+  margin: 0;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #e6dfd2;
+}
+
+#hud .hint {
+  margin-top: 6px;
+}
+
+#labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.label {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  padding: 1px 6px 2px;
+  border-radius: 4px;
+  background: rgba(24, 22, 18, 0.7);
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
