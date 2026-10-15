@@ -30,8 +30,8 @@ export type Stuff = "Wood" | "Stone" | "Metal" | "Fabric";
 
 export type WallKind = "planks" | "bricks" | "stone" | "metal" | "rock" | "rockOre" | "sandbags";
 
-/** World units for one elevation step. Cliff faces are this tall. */
-export const TIER_HEIGHT = 4.2;
+/** World units for one elevation step. Low enough that a run of steps reads as a slope. */
+export const TIER_HEIGHT = 1.35;
 
 /** Tiers at or above this close the gulch. The valley floor is 0. */
 export const GULCH_RIM = 3;

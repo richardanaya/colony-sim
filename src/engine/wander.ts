@@ -41,6 +41,7 @@ export function stepWander(state: WanderState, nav: NavGrid, dt: number): void {
     const tx = next.x + 0.5;
     const tz = next.z + 0.5;
     if (blockedAhead(i, x, z, count, tx, tz)) {
+      paths[i] = sidestep(i, x, z, count, nav, state.random());
       wait[i] = 0.2;
       moving[i] = 0;
       continue;
@@ -80,6 +81,37 @@ export interface WanderState {
   paths: Cell[][];
   activity: Activity[];
   random(): number;
+}
+
+/** A free neighbor that is not the cell someone is standing on. Empty if boxed in. */
+function sidestep(
+  index: number,
+  x: Float32Array,
+  z: Float32Array,
+  count: number,
+  nav: NavGrid,
+  random: number,
+): Cell[] {
+  const hereX = Math.floor(x[index]);
+  const hereZ = Math.floor(z[index]);
+  const options: Cell[] = [];
+  for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+    const nx = hereX + dx;
+    const nz = hereZ + dz;
+    if (nx < 0 || nz < 0 || nx >= nav.width || nz >= nav.height) continue;
+    if (isBlocked(nav, nx, nz)) continue;
+    const cx = nx + 0.5;
+    const cz = nz + 0.5;
+    let busy = false;
+    for (let other = 0; other < count; other++) {
+      if (other === index) continue;
+      if (Math.hypot(x[other] - cx, z[other] - cz) < 0.8) busy = true;
+    }
+    if (!busy) options.push({ x: nx, z: nz });
+  }
+  if (options.length === 0) return [];
+  const pick = options[Math.floor(random * options.length) % options.length];
+  return pick ? [pick] : [];
 }
 
 function blockedAhead(index: number, x: Float32Array, z: Float32Array, count: number, tx: number, tz: number): boolean {

@@ -85,13 +85,13 @@ async function boot(
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xc5d0b4);
   const span = Math.max(colony.width, colony.height);
-  scene.fog = new THREE.Fog(0xc5d0b4, 110, span * 1.55);
+  scene.fog = new THREE.Fog(0xc5d0b4, 140, span * 1.45);
 
   const hx = spawns.reduce((sum, spawn) => sum + spawn.x, 0) / Math.max(1, spawns.length);
   const hz = spawns.reduce((sum, spawn) => sum + spawn.z, 0) / Math.max(1, spawns.length);
-  const viewHeight = 46;
+  const viewHeight = 64;
   const camera = new THREE.OrthographicCamera(-viewHeight, viewHeight, viewHeight / 2, -viewHeight / 2, 0.1, span * 4);
-  camera.position.set(hx + 8, 64, hz - 30);
+  camera.position.set(hx + 18, 58, hz - 26);
 
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.target.set(hx, 0.3, hz);
@@ -112,11 +112,11 @@ async function boot(
   scene.add(new THREE.HemisphereLight(0xd7e4c8, 0x6a5436, 0.62));
   scene.add(new THREE.AmbientLight(0xfff4e4, 0.28));
   const sun = new THREE.DirectionalLight(0xfff0d2, 1.15);
-  sun.position.set(hx + 36, 88, hz - 18);
+  sun.position.set(hx + 40, 72, hz - 16);
   sun.target.position.set(hx, 0, hz);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
-  const shadow = 48;
+  const shadow = 70;
   sun.shadow.camera.left = -shadow;
   sun.shadow.camera.right = shadow;
   sun.shadow.camera.top = shadow;
@@ -231,8 +231,8 @@ async function boot(
     camera.top = viewHeight / 2;
     camera.bottom = -viewHeight / 2;
     camera.updateProjectionMatrix();
-    const zoomForHeight = viewHeight / (colony.height * 1.75);
-    const zoomForWidth = (viewHeight * aspect) / (colony.width * 1.75);
+    const zoomForHeight = viewHeight / (colony.height * 1.65);
+    const zoomForWidth = (viewHeight * aspect) / (colony.width * 1.65);
     controls.minZoom = Math.min(zoomForHeight, zoomForWidth, 1);
     renderer.setSize(window.innerWidth, window.innerHeight);
   };
