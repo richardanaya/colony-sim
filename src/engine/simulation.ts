@@ -1,5 +1,5 @@
 import { findPath, type PathCell } from "./path";
-import { TICK_DT, TICK_HZ, SKILL_NAMES, type Activity, type ColonistColumns, type ColonistRoster, type ColonistSave, type Contract, type CreateSimulationOptions, type HaulItemState, type Inventory, type Mind, type Needs, type ProductionOrder, type ResearchState, type SaveGame, type SimEvent, type Simulation, type Skills } from "./types";
+import { TICK_DT, TICK_HZ, SKILL_NAMES, type Activity, type ColonistColumns, type ColonistRoster, type ColonistSave, type Contract, type CreateSimulationOptions, type HaulItemState, type Inventory, type Mind, type NavGrid, type Needs, type ProductionOrder, type ResearchState, type SaveGame, type SimEvent, type Simulation, type Skills } from "./types";
 import { stepWander } from "./wander";
 
 interface HaulItem {
@@ -356,11 +356,26 @@ export class TypeScriptSimulation implements Simulation {
       }
     }
     goals.sort((a, b) => Math.abs(a.x - here.x) + Math.abs(a.z - here.z) - (Math.abs(b.x - here.x) + Math.abs(b.z - here.z)));
+    const nav = this.navAround(index);
     for (const goal of goals) {
       if (goal.x === here.x && goal.z === here.z) return goal;
-      if (findPath(here, goal, this.nav)) return goal;
+      if (findPath(here, goal, nav)) return goal;
     }
     return null;
+  }
+
+  /** Walk grid with every other colonist's cell blocked, so a path goes around them. */
+  private navAround(index: number): NavGrid {
+    const blocked = this.nav.blocked.slice();
+    const width = this.nav.width;
+    for (let other = 0; other < this.columns.count; other++) {
+      if (other === index) continue;
+      const x = Math.floor(this.columns.x[other]);
+      const z = Math.floor(this.columns.z[other]);
+      if (x < 0 || z < 0 || x >= width || z >= this.nav.height) continue;
+      blocked[z * width + x] = 1;
+    }
+    return { width, height: this.nav.height, blocked };
   }
 
   private stepHaul(dt: number): void {
@@ -381,7 +396,7 @@ export class TypeScriptSimulation implements Simulation {
           this.finishOrder(i);
           continue;
         }
-        const path = findPath(here, goal, this.nav);
+        const path = findPath(here, goal, this.navAround(i));
         if (!path || path.length === 0) {
           this.clearOrder(i);
           continue;
@@ -420,7 +435,8 @@ export class TypeScriptSimulation implements Simulation {
       const nearNext = Math.hypot(x[other] - tx, z[other] - tz) < 0.42;
       const nearMe = Math.hypot(x[other] - x[index], z[other] - z[index]) < 1;
       if (nearNext && nearMe) {
-        this.wait[index] = 0.15;
+        this.paths[index] = [];
+        this.haulWalking[index] = 0;
         this.columns.moving[index] = 0;
         return;
       }

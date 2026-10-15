@@ -98,7 +98,7 @@ Each tick the scheduler looks at contracts and writes `activity`.
 
 A colonist works only a contract they accepted. The check is `state === "accepted"` on that contract. Offering, refusing, withdrawing, and fulfilling are ordinary outcomes. Refusal is not a crime and not a mood penalty for anyone else.
 
-With no contracts, everyone wanders. That is what the five founders do now. The wander system picks a walkable cell at least four steps away, searches a four-connected path around blocked cells, and walks at 1.45 cells per second. Water, streams, walls, blocking props, animal footprints, and the unmoving mannequins are blocked. The walk grid is a `Uint8Array` built from the map in `src/game/walkability.ts`, which is the form a WASM module would copy once.
+With no contracts, everyone wanders. That is what the five founders do now. The wander system picks a walkable cell at least four steps away, searches a four-connected path around blocked cells, and walks at 1.45 cells per second. If someone is standing on the next cell, the walker drops that path and steps aside. A haul path treats other people as blocked and goes around them. Water, streams, walls, blocking props, animal footprints, and the unmoving mannequins are blocked. The walk grid is a `Uint8Array` built from the map in `src/game/walkability.ts`, which is the form a WASM module would copy once.
 
 Nothing in the scheduler drafts, prioritizes over a refusal, or fills a quota by picking the nearest idle person.
 

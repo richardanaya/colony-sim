@@ -55,6 +55,33 @@ test("A* takes the short walk across open ground", () => {
   assert.deepEqual(around?.[around.length - 1], { x: 3, z: 1 });
 });
 
+test("founders crowded on the yard still pick up the campfire", () => {
+  const valley = generateValley(DEFAULT_SEED);
+  const fire = valley.colony.props.find((prop) => prop.model === "campfire");
+  assert.ok(fire);
+  const sim = createSimulation({
+    spawns: valley.spawns,
+    nav: walkability(valley.colony, { skipMovable: true }),
+    seed: DEFAULT_SEED,
+    items: valley.colony.props.filter((prop) => prop.movable).map((prop) => ({
+      id: prop.id,
+      x: prop.x,
+      z: prop.z,
+      w: prop.w ?? 1,
+      d: prop.d ?? 1,
+      blocks: prop.blocks !== false,
+    })),
+  });
+  for (let i = 0; i < 120; i++) sim.advance(1 / 20);
+  assert.equal(sim.orderPickup(1, fire.id), true);
+  let carried = false;
+  for (let i = 0; i < 400 && !carried; i++) {
+    sim.advance(1 / 20);
+    carried = sim.items().some((item) => item.id === fire.id && item.carrierId === 1);
+  }
+  assert.equal(carried, true);
+});
+
 test("a colonist walks, picks up, and places through the engine", () => {
   const nav = { width: 12, height: 12, blocked: new Uint8Array(144) };
   const sim = createSimulation({
