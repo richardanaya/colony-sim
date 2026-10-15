@@ -13,10 +13,7 @@ export function buildFigure(
   group.name = figure.id;
   figure.parts.forEach((model, index) => {
     const loaded = models.get(model);
-    if (!loaded) {
-      console.warn(`Missing colonist part ${model}`);
-      return;
-    }
+    if (!loaded) return;
     group.add(
       instantiate(loaded, {
         materials,

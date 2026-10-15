@@ -14,4 +14,7 @@ interface GulchDebug {
 interface Window {
   __colonyUsed?: ColonyUsed;
   __gulch?: GulchDebug;
+  __valleyLoad?: import("./ui/loading").ValleyLoadState;
+  __loaderSeen?: boolean;
+  __loaderReady?: boolean;
 }

@@ -79,6 +79,8 @@ function contentType(file) {
       return "image/x-icon";
     case ".json":
       return "application/json; charset=utf-8";
+    case ".gz":
+      return "application/gzip";
     default:
       return "application/octet-stream";
   }

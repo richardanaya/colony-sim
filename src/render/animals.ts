@@ -25,12 +25,10 @@ export function buildAnimal(
   root.rotation.y = THREE.MathUtils.degToRad(animal.yaw);
 
   const body = models.get(animal.model);
-  if (!body) console.warn(`Missing animal ${animal.model}`);
-  else root.add(instantiate(body, { materials }));
+  if (body) root.add(instantiate(body, { materials }));
 
   const pivots: THREE.Group[] = [];
   const leg = animal.leg ? models.get(animal.leg) : undefined;
-  if (animal.leg && !leg) console.warn(`Missing leg ${animal.leg}`);
   if (leg) {
     for (const hip of animal.hips) {
       const pivot = new THREE.Group();
