@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { ISORIM } from "../assets/paths";
 import { TIER_HEIGHT, type Colony, type TerrainKind } from "../game/map";
 import { geometryFrom, pushQuad } from "./geometry";
+import { attachLevelCut } from "./levelCut";
 import { loadTexture } from "./materials";
 
 const ASSET = `${ISORIM}/textures`;
@@ -47,7 +48,7 @@ export interface TerrainResult {
   flow: THREE.Texture;
 }
 
-export function buildTerrain(colony: Colony): TerrainResult {
+export function buildTerrain(colony: Colony, dug: ReadonlySet<string> = new Set()): TerrainResult {
   const group = new THREE.Group();
   group.name = "terrain";
   const water = new Set<string>();
@@ -57,6 +58,9 @@ export function buildTerrain(colony: Colony): TerrainResult {
   const stream = empty();
   const rockFaces = empty();
   const oreFaces = empty();
+  const carvedFaces = empty();
+  const carvedLips = empty();
+  const carvedFloor = empty();
   const oreCells = new Set(colony.walls.filter((wall) => wall.kind === "rockOre").map((wall) => `${wall.x},${wall.z}`));
   let peaked = false;
 
@@ -74,6 +78,11 @@ export function buildTerrain(colony: Colony): TerrainResult {
         pushQuad(dest.pos, dest.nrm, dest.uv, quad(x, y, z), uv(x, z, u));
         continue;
       }
+      if (dug.has(`${x},${z}`)) {
+        const style = STYLES.roughHewn;
+        pushQuad(carvedFloor.pos, carvedFloor.nrm, carvedFloor.uv, quad(x, 0.02, z), uv(x, z, style.repeat));
+        continue;
+      }
       let bucket = buckets.get(kind);
       if (!bucket) {
         bucket = empty();
@@ -83,7 +92,7 @@ export function buildTerrain(colony: Colony): TerrainResult {
       const y = elev * TIER_HEIGHT + (style.raised ? 0.02 : 0.005);
       pushQuad(bucket.pos, bucket.nrm, bucket.uv, quad(x, y, z), uv(x, z, style.repeat));
       const faces = oreCells.has(`${x},${z}`) ? oreFaces : rockFaces;
-      writeCliffFaces(colony, x, z, elev, y, faces);
+      writeCliffFaces(colony, dug, x, z, elev, y, faces, carvedFaces, carvedLips);
     }
   }
 
@@ -92,7 +101,7 @@ export function buildTerrain(colony: Colony): TerrainResult {
     const map = loadTexture(`${ASSET}/${style.file}`, true);
     const mesh = new THREE.Mesh(
       geometryFrom(THREE, data.pos, data.nrm, data.uv),
-      new THREE.MeshLambertMaterial({ color: style.color, map }),
+      rockMaterial(style.color, map),
     );
     mesh.receiveShadow = true;
     mesh.name = kind;
@@ -101,6 +110,9 @@ export function buildTerrain(colony: Colony): TerrainResult {
 
   addCliffMesh(group, "cliff-rock", rockFaces, "walls/RockSide.png", 0x9a9186);
   addCliffMesh(group, "cliff-ore", oreFaces, "walls/RockOreSide.png", 0x8a7058);
+  addCarvedMesh(group, carvedFaces);
+  addCarvedLip(group, carvedLips);
+  addCarvedFloor(group, carvedFloor);
 
   if (!peaked) {
     const pad = 3;
@@ -159,78 +171,218 @@ export function buildTerrain(colony: Colony): TerrainResult {
   return { group, water, ripples, flow };
 }
 
+const CARVE_INSET = 0;
+const CARVE_BEVEL = 0.28;
+const CARVE_FOOT = 0.36;
+
+type FaceDir = "e" | "w" | "n" | "s";
+
 function writeCliffFaces(
   colony: Colony,
+  dug: ReadonlySet<string>,
   x: number,
   z: number,
   elev: number,
   y1: number,
-  dest: { pos: number[]; nrm: number[]; uv: number[] },
+  natural: { pos: number[]; nrm: number[]; uv: number[] },
+  carved: { pos: number[]; nrm: number[]; uv: number[] },
+  lips: { pos: number[]; nrm: number[]; uv: number[] },
 ): void {
-  const { pos, nrm, uv } = dest;
-  const sides: { elev: number; corners: [number, number, number][]; u0: number; u1: number }[] = [
-    {
-      elev: neighborElev(colony, x + 1, z),
-      u0: (z + 1) * 0.5,
-      u1: z * 0.5,
-      corners: [
-        [x + 1, 0, z + 1],
-        [x + 1, 0, z],
-        [x + 1, y1, z],
-        [x + 1, y1, z + 1],
-      ],
-    },
-    {
-      elev: neighborElev(colony, x - 1, z),
-      u0: z * 0.5,
-      u1: (z + 1) * 0.5,
-      corners: [
-        [x, 0, z],
-        [x, 0, z + 1],
-        [x, y1, z + 1],
-        [x, y1, z],
-      ],
-    },
-    {
-      elev: neighborElev(colony, x, z + 1),
-      u0: x * 0.5,
-      u1: (x + 1) * 0.5,
-      corners: [
-        [x, 0, z + 1],
-        [x + 1, 0, z + 1],
-        [x + 1, y1, z + 1],
-        [x, y1, z + 1],
-      ],
-    },
-    {
-      elev: neighborElev(colony, x, z - 1),
-      u0: (x + 1) * 0.5,
-      u1: x * 0.5,
-      corners: [
-        [x + 1, 0, z],
-        [x, 0, z],
-        [x, y1, z],
-        [x + 1, y1, z],
-      ],
-    },
+  const sides: { dir: FaceDir; nx: number; nz: number; u0: number; u1: number }[] = [
+    { dir: "e", nx: x + 1, nz: z, u0: (z + 1) * 0.5, u1: z * 0.5 },
+    { dir: "w", nx: x - 1, nz: z, u0: z * 0.5, u1: (z + 1) * 0.5 },
+    { dir: "n", nx: x, nz: z + 1, u0: x * 0.5, u1: (x + 1) * 0.5 },
+    { dir: "s", nx: x, nz: z - 1, u0: (x + 1) * 0.5, u1: x * 0.5 },
   ];
   for (const side of sides) {
-    if (elev <= side.elev) continue;
-    const y0 = side.elev * TIER_HEIGHT;
-    const v1 = (y1 - y0) / SIDE_TEX_H;
-    const corners = side.corners.map((corner) => [corner[0], corner[1] === 0 ? y0 : y1, corner[2]] as [number, number, number]);
-    pushQuad(pos, nrm, uv, corners, [
-      [side.u0, 0],
-      [side.u1, 0],
-      [side.u1, v1],
-      [side.u0, v1],
-    ]);
+    const neighbor = neighborElev(colony, side.nx, side.nz);
+    const neighborDug = inMap(colony, side.nx, side.nz) && dug.has(`${side.nx},${side.nz}`);
+    const shown = neighborDug ? 0 : neighbor;
+    if (elev <= shown) continue;
+    if (elev > neighbor) {
+      const y0 = neighbor * TIER_HEIGHT;
+      const v1 = (y1 - y0) / SIDE_TEX_H;
+      pushQuad(natural.pos, natural.nrm, natural.uv, faceCorners(side.dir, x, z, y0, y1, 0), [
+        [side.u0, 0],
+        [side.u1, 0],
+        [side.u1, v1],
+        [side.u0, v1],
+      ]);
+    }
+    const carvedTop = elev > neighbor ? neighbor * TIER_HEIGHT : y1;
+    const carvedBottom = shown * TIER_HEIGHT;
+    if (carvedTop > carvedBottom + 1e-4) {
+      writeCarvedSpan(carved, lips, side.dir, x, z, carvedBottom, carvedTop);
+    }
   }
 }
 
+function writeCarvedSpan(
+  wall: { pos: number[]; nrm: number[]; uv: number[] },
+  lip: { pos: number[]; nrm: number[]; uv: number[] },
+  dir: FaceDir,
+  x: number,
+  z: number,
+  y0: number,
+  y1: number,
+): void {
+  const span = y1 - y0;
+  const bevel = span > CARVE_BEVEL + CARVE_FOOT + 0.12 ? CARVE_BEVEL : 0;
+  const foot = span > CARVE_FOOT + bevel + 0.12 ? CARVE_FOOT : 0;
+  const wallTop = y1 - bevel;
+  const wallBottom = y0 + foot;
+  const v1 = Math.max(0.4, (wallTop - wallBottom) / 2.2);
+  pushQuad(wall.pos, wall.nrm, wall.uv, faceCorners(dir, x, z, wallBottom, wallTop, CARVE_INSET), [
+    [0, 0],
+    [1, 0],
+    [1, v1],
+    [0, v1],
+  ]);
+  if (foot > 0) {
+    const inset = faceCorners(dir, x, z, y0, wallBottom, CARVE_INSET);
+    const outer = faceCorners(dir, x, z, y0, wallBottom, 0);
+    pushQuad(lip.pos, lip.nrm, lip.uv, [outer[0], outer[1], inset[2], inset[3]], [
+      [0, 0],
+      [1, 0],
+      [1, 1],
+      [0, 1],
+    ]);
+  }
+  if (bevel <= 0) return;
+  const insetTop = faceCorners(dir, x, z, wallTop, y1, CARVE_INSET);
+  const outerTop = faceCorners(dir, x, z, wallTop, y1, 0);
+  pushQuad(lip.pos, lip.nrm, lip.uv, [insetTop[0], insetTop[1], outerTop[2], outerTop[3]], [
+    [0, 0],
+    [1, 0],
+    [1, 1],
+    [0, 1],
+  ]);
+}
+
+function faceCorners(
+  dir: FaceDir,
+  x: number,
+  z: number,
+  y0: number,
+  y1: number,
+  inset: number,
+): [number, number, number][] {
+  if (dir === "e") {
+    const px = x + 1 - inset;
+    return [
+      [px, y0, z + 1],
+      [px, y0, z],
+      [px, y1, z],
+      [px, y1, z + 1],
+    ];
+  }
+  if (dir === "w") {
+    const px = x + inset;
+    return [
+      [px, y0, z],
+      [px, y0, z + 1],
+      [px, y1, z + 1],
+      [px, y1, z],
+    ];
+  }
+  if (dir === "n") {
+    const pz = z + 1 - inset;
+    return [
+      [x, y0, pz],
+      [x + 1, y0, pz],
+      [x + 1, y1, pz],
+      [x, y1, pz],
+    ];
+  }
+  const pz = z + inset;
+  return [
+    [x + 1, y0, pz],
+    [x, y0, pz],
+    [x, y1, pz],
+    [x + 1, y1, pz],
+  ];
+}
+
+function inMap(colony: Colony, x: number, z: number): boolean {
+  return x >= 0 && z >= 0 && x < colony.width && z < colony.height;
+}
+
 function neighborElev(colony: Colony, x: number, z: number): number {
-  if (x < 0 || z < 0 || x >= colony.width || z >= colony.height) return 0;
+  if (!inMap(colony, x, z)) return 0;
   return colony.elevation[z * colony.width + x] ?? 0;
+}
+
+let carvedMap: THREE.CanvasTexture | null = null;
+
+function carvedRockTexture(): THREE.CanvasTexture {
+  if (carvedMap) return carvedMap;
+  const canvas = document.createElement("canvas");
+  canvas.width = 128;
+  canvas.height = 128;
+  const context = canvas.getContext("2d");
+  if (context) {
+    context.fillStyle = "#4a4036";
+    context.fillRect(0, 0, 128, 128);
+    for (let i = 0; i < 7; i++) {
+      context.strokeStyle = i % 2 === 0 ? "rgba(28, 24, 20, 0.55)" : "rgba(108, 96, 80, 0.4)";
+      context.lineWidth = 3;
+      const y = 8 + i * 18;
+      context.beginPath();
+      context.moveTo(0, y);
+      context.bezierCurveTo(40, y + 3, 88, y - 3, 128, y);
+      context.stroke();
+    }
+    for (let n = 0; n < 48; n++) {
+      const px = (n * 37) % 128;
+      const py = (n * 53) % 128;
+      context.fillStyle = n % 2 === 0 ? "rgba(24, 20, 16, 0.35)" : "rgba(140, 126, 104, 0.22)";
+      context.fillRect(px, py, 8, 3);
+    }
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 8;
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.needsUpdate = true;
+  carvedMap = texture;
+  return texture;
+}
+
+function addCarvedMesh(group: THREE.Group, data: { pos: number[]; nrm: number[]; uv: number[] }): void {
+  if (data.pos.length === 0) return;
+  const mesh = new THREE.Mesh(
+    geometryFrom(THREE, data.pos, data.nrm, data.uv),
+    rockMaterial(0xffffff, carvedRockTexture()),
+  );
+  mesh.castShadow = false;
+  mesh.receiveShadow = true;
+  mesh.frustumCulled = true;
+  mesh.name = "cliff-carved";
+  group.add(mesh);
+}
+
+function addCarvedLip(group: THREE.Group, data: { pos: number[]; nrm: number[]; uv: number[] }): void {
+  if (data.pos.length === 0) return;
+  const mesh = new THREE.Mesh(
+    geometryFrom(THREE, data.pos, data.nrm, data.uv),
+    rockMaterial(0xc4b6a2, carvedRockTexture()),
+  );
+  mesh.receiveShadow = true;
+  mesh.name = "cliff-carved-lip";
+  group.add(mesh);
+}
+
+function addCarvedFloor(group: THREE.Group, data: { pos: number[]; nrm: number[]; uv: number[] }): void {
+  if (data.pos.length === 0) return;
+  const style = STYLES.roughHewn;
+  const mesh = new THREE.Mesh(
+    geometryFrom(THREE, data.pos, data.nrm, data.uv),
+    new THREE.MeshLambertMaterial({ color: 0x5c5348, map: loadTexture(`${ASSET}/${style.file}`, true) }),
+  );
+  mesh.receiveShadow = true;
+  mesh.name = "carved-floor";
+  group.add(mesh);
 }
 
 function addCliffMesh(
@@ -244,13 +396,19 @@ function addCliffMesh(
   const map = loadTexture(`${ASSET}/${file}`, true);
   const mesh = new THREE.Mesh(
     geometryFrom(THREE, data.pos, data.nrm, data.uv),
-    new THREE.MeshLambertMaterial({ color, map }),
+    rockMaterial(color, map),
   );
   mesh.castShadow = false;
   mesh.receiveShadow = true;
   mesh.frustumCulled = true;
   mesh.name = name;
   group.add(mesh);
+}
+
+function rockMaterial(color: number, map: THREE.Texture): THREE.MeshLambertMaterial {
+  const material = new THREE.MeshLambertMaterial({ color, map });
+  attachLevelCut(material);
+  return material;
 }
 
 function empty(): { pos: number[]; nrm: number[]; uv: number[] } {

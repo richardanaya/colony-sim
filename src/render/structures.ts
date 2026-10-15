@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { ISORIM } from "../assets/paths";
 import { TIER_HEIGHT, type Colony, type Side, type WallKind } from "../game/map";
 import { geometryFrom, pushQuad } from "./geometry";
+import { attachLevelCut } from "./levelCut";
 import { loadTexture } from "./materials";
 
 const ASSET = `${ISORIM}/textures`;
@@ -48,10 +49,12 @@ export interface StructureResult {
   cutaway: CutawayPiece[];
 }
 
-export function buildStructures(colony: Colony): StructureResult {
+const CRAG_MESHES = ["rock-sides", "rock-tops", "rockOre-sides", "rockOre-tops"];
+
+export function buildStructures(colony: Colony, dug: ReadonlySet<string> = new Set()): StructureResult {
   const group = new THREE.Group();
   group.name = "structures";
-  const walls = new Set(colony.walls.map((w) => `${w.x},${w.z}`));
+  const walls = standingWalls(colony, dug);
   const cutaway: CutawayPiece[] = [];
 
   const sideTex = {} as Record<WallKind, THREE.Texture>;
@@ -75,6 +78,7 @@ export function buildStructures(colony: Colony): StructureResult {
 
   for (const wall of colony.walls) {
     const { x, z, kind } = wall;
+    if ((kind === "rock" || kind === "rockOre") && dug.has(`${x},${z}`)) continue;
     const height = WALL_FILES[kind].height;
     const y0 = (colony.elevation[z * colony.width + x] ?? 0) * TIER_HEIGHT;
     if (kind === "rock" || kind === "rockOre") {
@@ -106,7 +110,7 @@ export function buildStructures(colony: Colony): StructureResult {
     if (data.pos.length === 0) continue;
     const mesh = new THREE.Mesh(
       geometryFrom(THREE, data.pos, data.nrm, data.uv),
-      new THREE.MeshLambertMaterial({ color: WALL_FILES[kind].color, map: sideTex[kind] }),
+      cragMaterial(WALL_FILES[kind].color, sideTex[kind]),
     );
     mesh.castShadow = false;
     mesh.receiveShadow = true;
@@ -118,7 +122,7 @@ export function buildStructures(colony: Colony): StructureResult {
     if (data.pos.length === 0) continue;
     const mesh = new THREE.Mesh(
       geometryFrom(THREE, data.pos, data.nrm, data.uv),
-      new THREE.MeshLambertMaterial({ color: WALL_FILES[kind].color, map: topTex[kind] }),
+      cragMaterial(WALL_FILES[kind].color, topTex[kind]),
     );
     mesh.castShadow = false;
     mesh.receiveShadow = true;
@@ -146,6 +150,82 @@ export function buildStructures(colony: Colony): StructureResult {
   }
 
   return { group, walls, cutaway };
+}
+
+/** Drop crag meshes on dug cells and open the neighboring rock faces. */
+export function rebuildCrags(colony: Colony, group: THREE.Group, dug: ReadonlySet<string>): void {
+  for (const name of CRAG_MESHES) {
+    const mesh = group.getObjectByName(name);
+    if (!(mesh instanceof THREE.Mesh)) continue;
+    group.remove(mesh);
+    mesh.geometry.dispose();
+    const material = mesh.material;
+    if (material instanceof THREE.Material) material.dispose();
+  }
+  const walls = standingWalls(colony, dug);
+  const sideTex = {} as Record<WallKind, THREE.Texture>;
+  const topTex = {} as Record<WallKind, THREE.Texture>;
+  for (const kind of ["rock", "rockOre"] as const) {
+    sideTex[kind] = loadTexture(`${ASSET}/${WALL_FILES[kind].side}`, true);
+    topTex[kind] = loadTexture(`${ASSET}/${WALL_FILES[kind].top}`, true);
+  }
+  const cliffSides = new Map<WallKind, { pos: number[]; nrm: number[]; uv: number[] }>();
+  const cliffTops = new Map<WallKind, { pos: number[]; nrm: number[]; uv: number[] }>();
+  const cliffBucket = (map: Map<WallKind, { pos: number[]; nrm: number[]; uv: number[] }>, kind: WallKind) => {
+    let found = map.get(kind);
+    if (!found) {
+      found = { pos: [], nrm: [], uv: [] };
+      map.set(kind, found);
+    }
+    return found;
+  };
+  for (const wall of colony.walls) {
+    if (wall.kind !== "rock" && wall.kind !== "rockOre") continue;
+    if (dug.has(`${wall.x},${wall.z}`)) continue;
+    const height = WALL_FILES[wall.kind].height;
+    const y0 = (colony.elevation[wall.z * colony.width + wall.x] ?? 0) * TIER_HEIGHT;
+    writeWallSides(wall.x, wall.z, y0, height, walls, cliffBucket(cliffSides, wall.kind));
+    writeWallTop(wall.x, wall.z, y0 + height, cliffBucket(cliffTops, wall.kind));
+  }
+  for (const [kind, data] of cliffSides) {
+    if (data.pos.length === 0) continue;
+    const mesh = new THREE.Mesh(
+      geometryFrom(THREE, data.pos, data.nrm, data.uv),
+      cragMaterial(WALL_FILES[kind].color, sideTex[kind]),
+    );
+    mesh.castShadow = false;
+    mesh.receiveShadow = true;
+    mesh.frustumCulled = true;
+    mesh.name = `${kind}-sides`;
+    group.add(mesh);
+  }
+  for (const [kind, data] of cliffTops) {
+    if (data.pos.length === 0) continue;
+    const mesh = new THREE.Mesh(
+      geometryFrom(THREE, data.pos, data.nrm, data.uv),
+      cragMaterial(WALL_FILES[kind].color, topTex[kind]),
+    );
+    mesh.castShadow = false;
+    mesh.receiveShadow = true;
+    mesh.frustumCulled = true;
+    mesh.name = `${kind}-tops`;
+    group.add(mesh);
+  }
+}
+
+function cragMaterial(color: number, map: THREE.Texture): THREE.MeshLambertMaterial {
+  const material = new THREE.MeshLambertMaterial({ color, map });
+  attachLevelCut(material);
+  return material;
+}
+
+function standingWalls(colony: Colony, dug: ReadonlySet<string>): Set<string> {
+  const walls = new Set<string>();
+  for (const wall of colony.walls) {
+    if ((wall.kind === "rock" || wall.kind === "rockOre") && dug.has(`${wall.x},${wall.z}`)) continue;
+    walls.add(`${wall.x},${wall.z}`);
+  }
+  return walls;
 }
 
 function interiorCells(colony: Colony): Set<string> {

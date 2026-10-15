@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { createSimulation, type SaveGame, type Simulation } from "../engine";
 import type { ColonistSpawn } from "../engine/types";
-import type { Colony } from "../game/map";
+import { TIER_HEIGHT, type Colony } from "../game/map";
 import { formatSeed } from "../game/generate";
 import { createValley } from "../game/valley";
 import { walkability } from "../game/walkability";
@@ -10,10 +10,11 @@ import { buildAnimal, swayAnimals, type PosedAnimal } from "./animals";
 import { placeProps } from "./batch";
 import { buildFigure } from "./figures";
 import { mountOrders } from "./interact";
+import { syncLevelView } from "./levelCut";
 import { MaterialLibrary, texturesSettled, usedTexturesList } from "./materials";
 import { loadModels } from "./models";
 import { instantiate } from "./obj";
-import { buildStructures, cameraFaces, type CutawayPiece } from "./structures";
+import { buildStructures, cameraFaces, rebuildCrags, type CutawayPiece } from "./structures";
 import { sampleColonist, type SampledColonist } from "./sync";
 import { buildTerrain } from "./terrain";
 import type { LoadGate } from "../ui/loading";
@@ -131,7 +132,7 @@ async function boot(
   fill.position.set(hx - 12, 14, hz + 16);
   scene.add(fill);
 
-  const terrain = buildTerrain(colony);
+  let terrain = buildTerrain(colony);
   scene.add(terrain.group);
   const structures = buildStructures(colony);
   scene.add(structures.group);
@@ -174,7 +175,20 @@ async function boot(
       d: prop.d ?? 1,
       blocks: prop.blocks !== false,
     })),
+    rock: rockCells(colony),
   });
+  let carvedRevision = sim.digState().revision;
+  const syncCarve = () => {
+    const state = sim.digState();
+    if (state.revision === carvedRevision) return;
+    carvedRevision = state.revision;
+    const dug = new Set(state.dug.map((cell) => `${cell.x},${cell.z}`));
+    scene.remove(terrain.group);
+    disposeMeshes(terrain.group);
+    terrain = buildTerrain(colony, dug);
+    scene.add(terrain.group);
+    rebuildCrags(colony, structures.group, dug);
+  };
   const roster = sim.roster();
   const views: ColonistView[] = roster.keys.map((key, index) => {
     const figure = figures.get(key);
@@ -202,8 +216,13 @@ async function boot(
     sim,
     views.map((view) => ({ group: view.group, label: view.label, pick: view.pick })),
     movables,
+    (x, z) => {
+      if (x < 0 || z < 0 || x >= colony.width || z >= colony.height) return 0.08;
+      if (sim.buildable(x, z)) return 0.1;
+      return (colony.elevation[z * colony.width + x] ?? 0) * TIER_HEIGHT + 0.1;
+    },
   );
-  publishSim(sim, camera, renderer.domElement);
+  publishSim(sim, camera, controls, renderer.domElement);
 
   const posed: PosedAnimal[] = colony.animals.map((animal) => {
     const built = buildAnimal(animal, models, materials);
@@ -254,6 +273,7 @@ async function boot(
     applyCutaway();
     sim.advance(dt);
     sim.pollEvents();
+    syncCarve();
     const columns = sim.colonists();
     const alpha = sim.alpha();
     for (let i = 0; i < views.length; i++) {
@@ -269,6 +289,7 @@ async function boot(
       material.emissiveIntensity = 0.45 + Math.sin(visualTime * 8 + material.id) * 0.28;
     }
     orders.update(sampled);
+    syncLevelView(camera.zoom, sampled, (x, z) => sim.buildable(Math.floor(x), Math.floor(z)));
     placeLabels(views, sampled, camera, labelAnchor, renderer.domElement);
     renderer.render(scene, camera);
     gate.markFrame();
@@ -277,7 +298,12 @@ async function boot(
   frame();
 }
 
-function publishSim(sim: Simulation, camera: THREE.Camera, canvas: HTMLCanvasElement): void {
+function publishSim(
+  sim: Simulation,
+  camera: THREE.OrthographicCamera,
+  controls: { target: THREE.Vector3 },
+  canvas: HTMLCanvasElement,
+): void {
   const projected = new THREE.Vector3();
   window.__gulch = {
     get tick() {
@@ -295,7 +321,43 @@ function publishSim(sim: Simulation, camera: THREE.Camera, canvas: HTMLCanvasEle
     },
     items: () => sim.items().map((item) => ({ ...item })),
     blocked: (x: number, z: number) => sim.blocked(x, z),
+    orderMove: (colonistId, x, z) => sim.orderMove(colonistId, x, z),
+    orderDig: (colonistId, cells) => sim.orderDig(colonistId, cells),
+    diggable: (x, z) => sim.diggable(x, z),
+    buildable: (x, z) => sim.buildable(x, z),
+    digState: () => sim.digState(),
+    advance: (seconds) => sim.advance(seconds),
+    setView(x, y, z, tx, ty, tz, zoom) {
+      camera.position.set(x, y, z);
+      controls.target.set(tx, ty, tz);
+      if (typeof zoom === "number" && zoom > 0) camera.zoom = zoom;
+      camera.lookAt(controls.target);
+      camera.updateProjectionMatrix();
+    },
   };
+}
+
+function rockCells(colony: Colony): { x: number; z: number }[] {
+  const cells: { x: number; z: number }[] = [];
+  for (let z = 0; z < colony.height; z++) {
+    for (let x = 0; x < colony.width; x++) {
+      const index = z * colony.width + x;
+      const kind = colony.terrain[index];
+      if (kind === "water" || kind === "stream") continue;
+      if ((colony.elevation[index] ?? 0) < 1) continue;
+      cells.push({ x, z });
+    }
+  }
+  return cells;
+}
+
+function disposeMeshes(root: THREE.Object3D): void {
+  root.traverse((obj) => {
+    if (!(obj instanceof THREE.Mesh)) return;
+    obj.geometry.dispose();
+    const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+    for (const material of materials) material.dispose();
+  });
 }
 
 function placeLabels(

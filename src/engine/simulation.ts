@@ -1,5 +1,5 @@
 import { findPath, type PathCell } from "./path";
-import { TICK_DT, TICK_HZ, SKILL_NAMES, type Activity, type ColonistColumns, type ColonistRoster, type ColonistSave, type Contract, type CreateSimulationOptions, type HaulItemState, type Inventory, type Mind, type Needs, type ProductionOrder, type ResearchState, type SaveGame, type SimEvent, type Simulation, type Skills } from "./types";
+import { TICK_DT, TICK_HZ, SKILL_NAMES, type Activity, type ColonistColumns, type ColonistRoster, type ColonistSave, type Contract, type CreateSimulationOptions, type DigCell, type DigProgress, type DigState, type HaulItemState, type Inventory, type Mind, type Needs, type ProductionOrder, type ResearchState, type SaveGame, type SimEvent, type Simulation, type Skills } from "./types";
 import { stepWander } from "./wander";
 
 interface HaulItem {
@@ -15,9 +15,13 @@ interface HaulItem {
 type PlayerOrder =
   | { kind: "move"; x: number; z: number }
   | { kind: "pickup"; itemId: string }
-  | { kind: "place"; x: number; z: number };
+  | { kind: "place"; x: number; z: number }
+  | { kind: "dig"; cells: DigCell[]; work: number; target: DigCell | null };
 
 const CAPACITY = 64;
+/** Seconds to open one rock cell at mining 0. Higher mining shortens it. */
+const DIG_SECONDS = 1.75;
+const DIG_CAP = 96;
 
 /**
  * Reference backend. It keeps colonist transforms in columns so a Zig module
@@ -49,7 +53,11 @@ export class TypeScriptSimulation implements Simulation {
   private readonly playerOrders: (PlayerOrder | null)[];
   private readonly haulWalking: Uint8Array;
   private readonly haulItems: HaulItem[];
+  private readonly originalBlocked: Uint8Array;
   private readonly fixedBlocked: Uint8Array;
+  private readonly rock: Uint8Array;
+  private readonly dug = new Set<string>();
+  private digRevision = 0;
   private readonly columns: ColonistColumns;
   private accumulator = 0;
   private seed: number;
@@ -81,7 +89,15 @@ export class TypeScriptSimulation implements Simulation {
     this.paths = spawns.map(() => []);
     this.playerOrders = spawns.map(() => null);
     this.haulWalking = new Uint8Array(CAPACITY);
+    this.originalBlocked = new Uint8Array(options.nav.blocked);
     this.fixedBlocked = new Uint8Array(options.nav.blocked);
+    this.rock = new Uint8Array(options.nav.width * options.nav.height);
+    for (const cell of options.rock ?? []) {
+      const x = Math.floor(cell.x);
+      const z = Math.floor(cell.z);
+      if (x < 0 || z < 0 || x >= options.nav.width || z >= options.nav.height) continue;
+      this.rock[z * options.nav.width + x] = 1;
+    }
     this.haulItems = (options.items ?? []).map((item) => ({
       id: item.id,
       x: item.x,
@@ -185,6 +201,7 @@ export class TypeScriptSimulation implements Simulation {
       contracts: this.contracts.map((contract) => ({ ...contract })),
       research: { ...this.research, unlocked: [...this.research.unlocked] },
       orders: this.orders.map((order) => ({ ...order })),
+      dug: this.dugCells(),
     };
   }
 
@@ -223,6 +240,17 @@ export class TypeScriptSimulation implements Simulation {
       this.columns.moving[i] = 0;
       this.copyCurrentToPrevious(i);
     }
+    this.dug.clear();
+    this.fixedBlocked.set(this.originalBlocked);
+    for (const cell of save.dug ?? []) {
+      const x = Math.floor(cell.x);
+      const z = Math.floor(cell.z);
+      if (!this.rockCell(x, z)) continue;
+      this.dug.add(cellKey(x, z));
+      this.fixedBlocked[z * this.nav.width + x] = 0;
+    }
+    this.paintItems();
+    this.digRevision += 1;
   }
 
   private step(dt: number): void {
@@ -287,6 +315,45 @@ export class TypeScriptSimulation implements Simulation {
     if (!this.standBeside(index, { x, z, w: item.w, d: item.d, blocks: item.blocks })) return false;
     this.setOrder(index, { kind: "place", x, z });
     return true;
+  }
+
+  orderDig(colonistId: number, cells: readonly DigCell[]): boolean {
+    const index = this.indexOf(colonistId);
+    if (index < 0) return false;
+    const chosen = capDig(this.normalizeDig(cells), DIG_CAP);
+    if (chosen.length === 0) return false;
+    if (!this.designationReaches(index, chosen)) return false;
+    this.setOrder(index, { kind: "dig", cells: chosen, work: 0, target: null });
+    return true;
+  }
+
+  digState(): DigState {
+    const pending: DigCell[] = [];
+    let active: DigProgress | null = null;
+    for (let i = 0; i < this.columns.count; i++) {
+      const order = this.playerOrders[i];
+      if (!order || order.kind !== "dig") continue;
+      for (const cell of order.cells) pending.push({ x: cell.x, z: cell.z });
+      if (order.target && !active) {
+        const need = this.digSeconds(i);
+        active = {
+          x: order.target.x,
+          z: order.target.z,
+          progress: need <= 0 ? 1 : Math.max(0, Math.min(1, order.work / need)),
+        };
+      }
+    }
+    return { revision: this.digRevision, dug: this.dugCells(), pending, active };
+  }
+
+  buildable(x: number, z: number): boolean {
+    return this.dug.has(cellKey(Math.floor(x), Math.floor(z)));
+  }
+
+  diggable(x: number, z: number): boolean {
+    const cx = Math.floor(x);
+    const cz = Math.floor(z);
+    return this.rockCell(cx, cz) && !this.dug.has(cellKey(cx, cz));
   }
 
   items(): readonly HaulItemState[] {
@@ -366,6 +433,10 @@ export class TypeScriptSimulation implements Simulation {
   private stepHaul(dt: number): void {
     for (let i = 0; i < this.columns.count; i++) {
       if (this.activity[i] !== "haul" || !this.playerOrders[i]) continue;
+      if (this.playerOrders[i]?.kind === "dig") {
+        this.stepDig(i, dt);
+        continue;
+      }
       if (this.paths[i].length === 0) {
         if (this.haulWalking[i]) {
           this.finishOrder(i);
@@ -395,7 +466,7 @@ export class TypeScriptSimulation implements Simulation {
 
   private goalFor(index: number): PathCell | null {
     const order = this.playerOrders[index];
-    if (!order) return null;
+    if (!order || order.kind === "dig") return null;
     if (order.kind === "move") return this.openCell(order.x, order.z) ? { x: order.x, z: order.z } : null;
     if (order.kind === "pickup") {
       const item = this.haulItems.find((entry) => entry.id === order.itemId);
@@ -444,6 +515,184 @@ export class TypeScriptSimulation implements Simulation {
     const delta = Math.atan2(Math.sin(desired - from), Math.cos(desired - from));
     this.columns.yaw[index] = from + delta * (1 - Math.exp(-10 * dt));
     this.columns.moving[index] = 1;
+  }
+
+  private stepDig(index: number, dt: number): void {
+    const order = this.playerOrders[index];
+    if (!order || order.kind !== "dig") return;
+    if (this.paths[index].length > 0) {
+      this.walkPath(index, dt);
+      return;
+    }
+    this.haulWalking[index] = 0;
+
+    let target = order.target;
+    const current = target;
+    if (current && !order.cells.some((cell) => cell.x === current.x && cell.z === current.z)) target = null;
+    const open = this.floodFrom(index);
+    if (target && !this.standFor(index, target, open)) target = null;
+    if (!target) {
+      target = this.nextDigTarget(index, order.cells, open);
+      order.target = target;
+      order.work = 0;
+    }
+    if (!target) {
+      this.clearOrder(index);
+      return;
+    }
+    const stand = this.standFor(index, target, open);
+    if (!stand) {
+      order.cells = order.cells.filter((cell) => cell.x !== target.x || cell.z !== target.z);
+      order.target = null;
+      order.work = 0;
+      return;
+    }
+    const hereX = Math.floor(this.columns.x[index]);
+    const hereZ = Math.floor(this.columns.z[index]);
+    if (hereX !== stand.x || hereZ !== stand.z) {
+      const path = findPath({ x: hereX, z: hereZ }, stand, this.nav);
+      if (!path || path.length === 0) {
+        order.target = null;
+        return;
+      }
+      this.paths[index] = path;
+      this.haulWalking[index] = 1;
+      this.walkPath(index, dt);
+      return;
+    }
+
+    this.columns.moving[index] = 0;
+    this.faceCell(index, target, dt);
+    order.work += dt;
+    if (order.work + 1e-9 < this.digSeconds(index)) return;
+    this.openDug(target.x, target.z);
+    order.cells = order.cells.filter((cell) => cell.x !== target.x || cell.z !== target.z);
+    order.target = null;
+    order.work = 0;
+    if (order.cells.length === 0) this.clearOrder(index);
+  }
+
+  private digSeconds(index: number): number {
+    const skill = Math.max(0, Math.min(8, this.skills[index].mining));
+    return DIG_SECONDS * (8 / (8 + skill));
+  }
+
+  private normalizeDig(cells: readonly DigCell[]): DigCell[] {
+    const seen = new Set<string>();
+    const chosen: DigCell[] = [];
+    for (const cell of cells) {
+      const x = Math.floor(cell.x);
+      const z = Math.floor(cell.z);
+      if (!this.diggable(x, z)) continue;
+      const key = cellKey(x, z);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      chosen.push({ x, z });
+    }
+    return chosen;
+  }
+
+  private designationReaches(index: number, cells: readonly DigCell[]): boolean {
+    const open = this.floodFrom(index);
+    const width = this.nav.width;
+    for (const cell of cells) {
+      for (const [nx, nz] of neighborsOf(cell.x, cell.z)) {
+        if (nx < 0 || nz < 0 || nx >= width || nz >= this.nav.height) continue;
+        if (open[nz * width + nx]) return true;
+      }
+    }
+    return false;
+  }
+
+  private nextDigTarget(index: number, cells: readonly DigCell[], open: Uint8Array): DigCell | null {
+    const hx = Math.floor(this.columns.x[index]);
+    const hz = Math.floor(this.columns.z[index]);
+    let best: DigCell | null = null;
+    let bestMan = Infinity;
+    for (const cell of cells) {
+      if (!this.standFor(index, cell, open)) continue;
+      const man = Math.abs(cell.x - hx) + Math.abs(cell.z - hz);
+      if (!best || man < bestMan || (man === bestMan && (cell.x < best.x || (cell.x === best.x && cell.z < best.z)))) {
+        best = cell;
+        bestMan = man;
+      }
+    }
+    return best;
+  }
+
+  private standFor(index: number, cell: DigCell, open: Uint8Array): DigCell | null {
+    const width = this.nav.width;
+    const height = this.nav.height;
+    const hx = Math.floor(this.columns.x[index]);
+    const hz = Math.floor(this.columns.z[index]);
+    let best: DigCell | null = null;
+    let bestMan = Infinity;
+    for (const [nx, nz] of neighborsOf(cell.x, cell.z)) {
+      if (nx < 0 || nz < 0 || nx >= width || nz >= height) continue;
+      if (!open[nz * width + nx]) continue;
+      const man = Math.abs(nx - hx) + Math.abs(nz - hz);
+      if (!best || man < bestMan || (man === bestMan && (nx < best.x || (nx === best.x && nz < best.z)))) {
+        best = { x: nx, z: nz };
+        bestMan = man;
+      }
+    }
+    return best;
+  }
+
+  private floodFrom(index: number): Uint8Array {
+    const width = this.nav.width;
+    const height = this.nav.height;
+    const seen = new Uint8Array(width * height);
+    const hx = Math.floor(this.columns.x[index]);
+    const hz = Math.floor(this.columns.z[index]);
+    if (!this.openCell(hx, hz)) return seen;
+    const queue = [hz * width + hx];
+    seen[hz * width + hx] = 1;
+    for (let q = 0; q < queue.length; q++) {
+      const id = queue[q] ?? 0;
+      const x = id % width;
+      const z = (id / width) | 0;
+      for (const [nx, nz] of neighborsOf(x, z)) {
+        if (!this.openCell(nx, nz)) continue;
+        const next = nz * width + nx;
+        if (seen[next]) continue;
+        seen[next] = 1;
+        queue.push(next);
+      }
+    }
+    return seen;
+  }
+
+  private openDug(x: number, z: number): void {
+    if (!this.rockCell(x, z) || this.dug.has(cellKey(x, z))) return;
+    this.dug.add(cellKey(x, z));
+    this.fixedBlocked[z * this.nav.width + x] = 0;
+    this.paintItems();
+    this.digRevision += 1;
+  }
+
+  private rockCell(x: number, z: number): boolean {
+    if (x < 0 || z < 0 || x >= this.nav.width || z >= this.nav.height) return false;
+    return this.rock[z * this.nav.width + x] === 1;
+  }
+
+  private dugCells(): DigCell[] {
+    const cells: DigCell[] = [];
+    for (const key of this.dug) {
+      const [x, z] = key.split(",").map(Number);
+      cells.push({ x, z });
+    }
+    cells.sort((a, b) => a.z - b.z || a.x - b.x);
+    return cells;
+  }
+
+  private faceCell(index: number, cell: DigCell, dt: number): void {
+    const dx = cell.x + 0.5 - this.columns.x[index];
+    const dz = cell.z + 0.5 - this.columns.z[index];
+    const desired = Math.atan2(dx, dz);
+    const from = this.columns.yaw[index];
+    const delta = Math.atan2(Math.sin(desired - from), Math.cos(desired - from));
+    this.columns.yaw[index] = from + delta * (1 - Math.exp(-10 * dt));
   }
 
   private finishOrder(index: number): void {
@@ -584,4 +833,25 @@ function clamp01(value: number): number {
   if (value < 0) return 0;
   if (value > 1) return 1;
   return value;
+}
+
+function cellKey(x: number, z: number): string {
+  return `${x},${z}`;
+}
+
+function neighborsOf(x: number, z: number): [number, number][] {
+  return [[x + 1, z], [x - 1, z], [x, z + 1], [x, z - 1]];
+}
+
+function capDig(cells: DigCell[], limit: number): DigCell[] {
+  if (cells.length <= limit) return cells;
+  const anchor = cells[0];
+  if (!anchor) return cells;
+  return [...cells].sort((a, b) => {
+    const da = Math.abs(a.x - anchor.x) + Math.abs(a.z - anchor.z);
+    const db = Math.abs(b.x - anchor.x) + Math.abs(b.z - anchor.z);
+    if (da !== db) return da - db;
+    if (a.x !== b.x) return a.x - b.x;
+    return a.z - b.z;
+  }).slice(0, limit);
 }
