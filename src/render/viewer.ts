@@ -1,34 +1,46 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { createColony } from "./data/colony";
-import { buildAnimal, swayAnimals, type PosedAnimal } from "./lib/animals";
-import { buildFigure, stepWalkers, type Walker } from "./lib/colonists";
-import { MaterialLibrary, usedTexturesList } from "./lib/materials";
-import { instantiate, parseObj, type LoadedModel } from "./lib/obj";
-import { buildStructures, cameraFaces, type CutawayPiece } from "./lib/structures";
-import { buildTerrain } from "./lib/terrain";
-import type { Colony, Prop } from "./types";
-import { ISORIM } from "./lib/paths";
+import { ISORIM } from "../assets/paths";
+import { createSimulation, type SaveGame, type Simulation } from "../engine";
+import type { ColonistSpawn } from "../engine/types";
+import type { Colony } from "../game/map";
+import { createValley, valleySpawns } from "../game/valley";
+import { walkability } from "../game/walkability";
+import { buildAnimal, swayAnimals, type PosedAnimal } from "./animals";
+import { buildFigure } from "./figures";
+import { MaterialLibrary, usedTexturesList } from "./materials";
+import { instantiate, parseObj, type LoadedModel } from "./obj";
+import { buildStructures, cameraFaces, type CutawayPiece } from "./structures";
+import { sampleColonist, type SampledColonist } from "./sync";
+import { buildTerrain } from "./terrain";
 
 const MODEL_URL = `${ISORIM}/models`;
 
+interface ColonistView {
+  group: THREE.Group;
+  label: HTMLDivElement;
+}
+
 export function mount(root: HTMLElement): void {
-  const colony = createColony();
+  const colony = createValley();
   const hud = document.createElement("div");
   hud.id = "hud";
+  hud.className = "is-concealed";
   hud.innerHTML = `
     <h1>${colony.name}</h1>
+    <p class="place">A hidden valley in Colorado</p>
     <p class="hint">Drag to pan · scroll to zoom · right-drag to orbit</p>
     <p id="status">Loading IsoRim models…</p>
   `;
   const labels = document.createElement("div");
   labels.id = "labels";
+  labels.className = "is-concealed";
   root.append(hud, labels);
   const status = hud.querySelector("#status");
   if (!(status instanceof HTMLElement)) return;
 
   void boot(root, colony, labels, status).catch((error: unknown) => {
-    status.textContent = error instanceof Error ? error.message : "The colony failed to load.";
+    status.textContent = error instanceof Error ? error.message : "The valley failed to load.";
     console.error(error);
   });
 }
@@ -151,35 +163,33 @@ async function boot(
     }
   }
 
-  const walkers: Walker[] = [];
-  colony.figures.forEach((figure, index) => {
+  const figures = new Map(colony.figures.map((figure) => [figure.id, figure]));
+  for (const figure of colony.figures) {
+    if (figure.wander && figure.name.length > 0) continue;
+    scene.add(buildFigure(figure, models, materials));
+  }
+
+  const spawns: ColonistSpawn[] = valleySpawns(colony);
+  const sim = createSimulation({ spawns, nav: walkability(colony) });
+  const roster = sim.roster();
+  const views: ColonistView[] = roster.keys.map((key, index) => {
+    const figure = figures.get(key);
+    if (!figure) throw new Error(`Missing figure ${key}`);
     const group = buildFigure(figure, models, materials);
     scene.add(group);
-    if (!figure.wander || figure.name.length === 0) return;
     const label = document.createElement("div");
     label.className = "label";
-    label.textContent = figure.name;
+    label.textContent = roster.names[index] ?? figure.name;
     labels.append(label);
-    walkers.push({
-      name: figure.name,
-      group,
-      label,
-      x: figure.x + 0.5,
-      z: figure.z + 0.5,
-      yaw: 0,
-      path: [],
-      wait: index * 0.35,
-      phase: index,
-    });
+    return { group, label };
   });
+  publishSim(sim);
 
   const posed: PosedAnimal[] = colony.animals.map((animal) => {
     const built = buildAnimal(animal, models, materials);
     scene.add(built.root);
     return built;
   });
-
-  const blocked = blockedCells(colony, terrain.water, structures.walls);
 
   window.__colonyUsed = {
     models: [...models.keys()].sort(),
@@ -208,45 +218,68 @@ async function boot(
 
   const clock = new THREE.Clock();
   const labelAnchor = new THREE.Vector3();
+  const sampled: SampledColonist[] = views.map(() => ({ x: 0, z: 0, yaw: 0, bob: 0 }));
   status.textContent = "Near walls fold away as you orbit.";
 
   const frame = () => {
-    const dt = Math.min(clock.getDelta(), 0.05);
-    const time = clock.elapsedTime;
+    const dt = clock.getDelta();
+    const visualTime = clock.elapsedTime;
     controls.update();
     applyCutaway();
-    stepWalkers(walkers, blocked, colony.width, colony.height, dt, time);
-    swayAnimals(posed, time);
-    terrain.ripples.offset.set(time * 0.015, time * 0.008);
-    terrain.flow.offset.set(time * -0.05, time * 0.01);
-    for (const material of materials.flicker) {
-      material.emissiveIntensity = 0.45 + Math.sin(time * 8 + material.id) * 0.28;
+    sim.advance(dt);
+    sim.pollEvents();
+    const columns = sim.colonists();
+    const alpha = sim.alpha();
+    for (let i = 0; i < views.length; i++) {
+      const sample = sampleColonist(columns, i, alpha, visualTime);
+      sampled[i] = sample;
+      views[i].group.position.set(sample.x, sample.bob, sample.z);
+      views[i].group.rotation.y = sample.yaw;
     }
-    placeLabels(walkers, camera, labelAnchor, renderer.domElement);
+    swayAnimals(posed, visualTime);
+    terrain.ripples.offset.set(visualTime * 0.015, visualTime * 0.008);
+    terrain.flow.offset.set(visualTime * -0.05, visualTime * 0.01);
+    for (const material of materials.flicker) {
+      material.emissiveIntensity = 0.45 + Math.sin(visualTime * 8 + material.id) * 0.28;
+    }
+    placeLabels(views, sampled, camera, labelAnchor, renderer.domElement);
     renderer.render(scene, camera);
     requestAnimationFrame(frame);
   };
   frame();
 }
 
+function publishSim(sim: Simulation): void {
+  window.__gulch = {
+    get tick() {
+      return sim.tick;
+    },
+    save: () => sim.save(),
+    load: (save: SaveGame) => sim.load(save),
+  };
+}
+
 function placeLabels(
-  walkers: Walker[],
+  views: ColonistView[],
+  sampled: SampledColonist[],
   camera: THREE.Camera,
   anchor: THREE.Vector3,
   canvas: HTMLCanvasElement,
 ): void {
   const width = canvas.clientWidth;
   const height = canvas.clientHeight;
-  for (const walker of walkers) {
-    anchor.set(walker.x, 1.35, walker.z);
+  for (let i = 0; i < views.length; i++) {
+    const sample = sampled[i];
+    anchor.set(sample.x, 1.35, sample.z);
     anchor.project(camera);
+    const label = views[i].label;
     if (anchor.z > 1) {
-      walker.label.style.display = "none";
+      label.style.display = "none";
       continue;
     }
-    walker.label.style.display = "block";
-    walker.label.style.left = `${(anchor.x * 0.5 + 0.5) * width}px`;
-    walker.label.style.top = `${(-anchor.y * 0.5 + 0.5) * height}px`;
+    label.style.display = "block";
+    label.style.left = `${(anchor.x * 0.5 + 0.5) * width}px`;
+    label.style.top = `${(-anchor.y * 0.5 + 0.5) * height}px`;
   }
 }
 
@@ -270,32 +303,4 @@ function modelNames(colony: Colony): string[] {
     if (animal.leg) names.add(animal.leg);
   }
   return [...names];
-}
-
-function blockedCells(colony: Colony, water: Set<string>, walls: Set<string>): Set<string> {
-  const blocked = new Set<string>([...water, ...walls]);
-  for (const prop of colony.props) {
-    if (prop.blocks === false) continue;
-    for (const cell of footprint(prop)) blocked.add(cell);
-  }
-  for (const animal of colony.animals) {
-    for (let dz = 0; dz < animal.d; dz++) {
-      for (let dx = 0; dx < animal.w; dx++) blocked.add(`${animal.x + dx},${animal.z + dz}`);
-    }
-  }
-  for (const figure of colony.figures) {
-    if (figure.wander) continue;
-    blocked.add(`${figure.x},${figure.z}`);
-  }
-  return blocked;
-}
-
-function footprint(prop: Prop): string[] {
-  const cells: string[] = [];
-  const w = prop.w ?? 1;
-  const d = prop.d ?? 1;
-  for (let dz = 0; dz < d; dz++) {
-    for (let dx = 0; dx < w; dx++) cells.push(`${prop.x + dx},${prop.z + dz}`);
-  }
-  return cells;
 }

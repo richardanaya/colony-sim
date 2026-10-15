@@ -85,6 +85,10 @@ function publishPagesRoot(): Plugin {
         if (fs.existsSync(from)) fs.copyFileSync(from, path.join(root, icon));
       }
       fs.cpSync(path.join(rootAssets, "isorim"), path.join(distAssets, "isorim"), { recursive: true });
+      const simDir = path.join(rootAssets, "sim");
+      if (fs.existsSync(simDir)) {
+        fs.cpSync(simDir, path.join(distAssets, "sim"), { recursive: true });
+      }
     },
   };
 }

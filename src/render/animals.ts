@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { Animal } from "../types";
+import type { Animal } from "../game/map";
 import type { MaterialLibrary } from "./materials";
 import { instantiate, type LoadedModel } from "./obj";
 

@@ -1,8 +1,8 @@
 import * as THREE from "three";
-import type { Colony, Side, WallKind } from "../types";
+import { ISORIM } from "../assets/paths";
+import type { Colony, Side, WallKind } from "../game/map";
 import { geometryFrom, pushQuad } from "./geometry";
 import { loadTexture } from "./materials";
-import { ISORIM } from "./paths";
 
 const ASSET = `${ISORIM}/textures`;
 const WALL_H = 1.2;

@@ -139,7 +139,7 @@ function pushTriangle(
 export const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x221c18 });
 
 export interface InstanceOptions {
-  stuff?: import("../types").Stuff;
+  stuff?: import("../game/map").Stuff;
   tint?: THREE.Color | null;
   scale?: number;
   stretch?: [number, number, number];
@@ -149,7 +149,7 @@ export interface InstanceOptions {
 }
 
 export interface MaterialSource {
-  get(name: string, stuff: import("../types").Stuff, tint: THREE.Color | null): THREE.Material;
+  get(name: string, stuff: import("../game/map").Stuff, tint: THREE.Color | null): THREE.Material;
 }
 
 export function instantiate(model: LoadedModel, opts: InstanceOptions): THREE.Group {
