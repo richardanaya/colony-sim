@@ -1,8 +1,9 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { createColony } from "./data/colony";
-import { buildColonist, stepWalkers, type Walker } from "./lib/colonists";
-import { MaterialLibrary } from "./lib/materials";
+import { buildAnimal, swayAnimals, type PosedAnimal } from "./lib/animals";
+import { buildFigure, stepWalkers, type Walker } from "./lib/colonists";
+import { MaterialLibrary, usedTexturesList } from "./lib/materials";
 import { instantiate, parseObj, type LoadedModel } from "./lib/obj";
 import { buildStructures, cameraFaces, type CutawayPiece } from "./lib/structures";
 import { buildTerrain } from "./lib/terrain";
@@ -52,13 +53,14 @@ async function boot(
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xc5d0b4);
-  scene.fog = new THREE.Fog(0xc5d0b4, 42, 96);
+  const span = Math.max(colony.width, colony.height);
+  scene.fog = new THREE.Fog(0xc5d0b4, span * 2.4, span * 4.2);
 
   const cx = colony.width / 2;
   const cz = colony.height / 2;
-  const frustum = 23;
-  const camera = new THREE.OrthographicCamera(-frustum, frustum, frustum / 2, -frustum / 2, 0.1, 250);
-  camera.position.set(cx + 24, 26, cz - 28);
+  const frustum = span * 0.86;
+  const camera = new THREE.OrthographicCamera(-frustum, frustum, frustum / 2, -frustum / 2, 0.1, span * 6);
+  camera.position.set(cx + span * 0.42, span * 0.5, cz - span * 0.5);
 
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.target.set(cx, 0.3, cz);
@@ -67,8 +69,8 @@ async function boot(
   controls.screenSpacePanning = true;
   controls.minPolarAngle = 0.28;
   controls.maxPolarAngle = Math.PI / 2.08;
-  controls.minZoom = 0.45;
-  controls.maxZoom = 4.2;
+  controls.minZoom = 0.35;
+  controls.maxZoom = 8;
   controls.zoomSpeed = 0.85;
   controls.mouseButtons = {
     LEFT: THREE.MOUSE.PAN,
@@ -80,17 +82,17 @@ async function boot(
   scene.add(new THREE.HemisphereLight(0xd7e4c8, 0x6a5436, 0.62));
   scene.add(new THREE.AmbientLight(0xfff4e4, 0.28));
   const sun = new THREE.DirectionalLight(0xfff0d2, 1.15);
-  sun.position.set(cx + 20, 30, cz - 14);
+  sun.position.set(cx + span * 0.28, span * 0.42, cz - span * 0.18);
   sun.target.position.set(cx, 0, cz);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
-  const shadow = 26;
+  const shadow = span * 0.62;
   sun.shadow.camera.left = -shadow;
   sun.shadow.camera.right = shadow;
   sun.shadow.camera.top = shadow;
   sun.shadow.camera.bottom = -shadow;
   sun.shadow.camera.near = 1;
-  sun.shadow.camera.far = 90;
+  sun.shadow.camera.far = span * 3;
   sun.shadow.bias = -0.0006;
   sun.shadow.normalBias = 0.025;
   scene.add(sun);
@@ -139,7 +141,7 @@ async function boot(
     });
     const w = prop.w ?? 1;
     const d = prop.d ?? 1;
-    group.position.set(prop.x + w / 2, 0, prop.z + d / 2);
+    group.position.set(prop.x + w / 2, prop.y ?? 0, prop.z + d / 2);
     group.name = prop.id;
     scene.add(group);
     if (prop.model === "campfire") {
@@ -149,26 +151,40 @@ async function boot(
     }
   }
 
-  const blocked = blockedCells(colony, terrain.water, structures.walls);
-  const walkers: Walker[] = colony.colonists.map((colonist, index) => {
-    const group = buildColonist(colonist, models, materials);
+  const walkers: Walker[] = [];
+  colony.figures.forEach((figure, index) => {
+    const group = buildFigure(figure, models, materials);
     scene.add(group);
+    if (!figure.wander || figure.name.length === 0) return;
     const label = document.createElement("div");
     label.className = "label";
-    label.textContent = colonist.name;
+    label.textContent = figure.name;
     labels.append(label);
-    return {
-      name: colonist.name,
+    walkers.push({
+      name: figure.name,
       group,
       label,
-      x: colonist.x + 0.5,
-      z: colonist.z + 0.5,
+      x: figure.x + 0.5,
+      z: figure.z + 0.5,
       yaw: 0,
       path: [],
       wait: index * 0.35,
       phase: index,
-    };
+    });
   });
+
+  const posed: PosedAnimal[] = colony.animals.map((animal) => {
+    const built = buildAnimal(animal, models, materials);
+    scene.add(built.root);
+    return built;
+  });
+
+  const blocked = blockedCells(colony, terrain.water, structures.walls);
+
+  window.__colonyUsed = {
+    models: [...models.keys()].sort(),
+    textures: usedTexturesList().sort(),
+  };
 
   const applyCutaway = () => {
     const camSouth = camera.position.z < controls.target.z;
@@ -200,7 +216,9 @@ async function boot(
     controls.update();
     applyCutaway();
     stepWalkers(walkers, blocked, colony.width, colony.height, dt, time);
+    swayAnimals(posed, time);
     terrain.ripples.offset.set(time * 0.015, time * 0.008);
+    terrain.flow.offset.set(time * -0.05, time * 0.01);
     for (const material of materials.flicker) {
       material.emissiveIntensity = 0.45 + Math.sin(time * 8 + material.id) * 0.28;
     }
@@ -246,14 +264,10 @@ async function loadModels(names: string[]): Promise<Map<string, LoadedModel>> {
 function modelNames(colony: Colony): string[] {
   const names = new Set<string>(["door_leaf", "door_lintel"]);
   for (const prop of colony.props) names.add(prop.model);
-  for (const colonist of colony.colonists) {
-    names.add(`person_${colonist.body}_lower`);
-    names.add(`person_${colonist.body}_upper`);
-    names.add("person_head");
-    names.add("person_face");
-    names.add(`person_hair_${colonist.hair}`);
-    if (colonist.beard) names.add("person_beard_goatee");
-    if (colonist.hat) names.add("person_hat_cap");
+  for (const figure of colony.figures) for (const part of figure.parts) names.add(part);
+  for (const animal of colony.animals) {
+    names.add(animal.model);
+    if (animal.leg) names.add(animal.leg);
   }
   return [...names];
 }
@@ -263,6 +277,15 @@ function blockedCells(colony: Colony, water: Set<string>, walls: Set<string>): S
   for (const prop of colony.props) {
     if (prop.blocks === false) continue;
     for (const cell of footprint(prop)) blocked.add(cell);
+  }
+  for (const animal of colony.animals) {
+    for (let dz = 0; dz < animal.d; dz++) {
+      for (let dx = 0; dx < animal.w; dx++) blocked.add(`${animal.x + dx},${animal.z + dz}`);
+    }
+  }
+  for (const figure of colony.figures) {
+    if (figure.wander) continue;
+    blocked.add(`${figure.x},${figure.z}`);
   }
   return blocked;
 }

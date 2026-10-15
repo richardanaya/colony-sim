@@ -2,18 +2,35 @@
 
 export type TerrainKind =
   | "grass"
+  | "grassRich"
   | "soil"
+  | "soilRich"
   | "dirt"
   | "sand"
+  | "mud"
+  | "marsh"
+  | "moss"
+  | "gravel"
+  | "ice"
+  | "roughHewn"
+  | "roughStone"
+  | "smoothStone"
   | "woodFloor"
   | "stoneTile"
-  | "water";
+  | "carpet"
+  | "concrete"
+  | "flagstone"
+  | "metalFloor"
+  | "paved"
+  | "sterile"
+  | "water"
+  | "stream";
 
 export type Stuff = "Wood" | "Stone" | "Metal" | "Fabric";
 
-export type WallKind = "planks" | "bricks" | "stone";
+export type WallKind = "planks" | "bricks" | "stone" | "metal" | "rock" | "rockOre" | "sandbags";
 
-export type RoofStyle = "terracotta" | "thatch" | "tin";
+export type RoofStyle = "terracotta" | "thatch" | "tin" | "slate";
 
 /** A side of a building the camera can stand on. */
 export type Side = "n" | "s" | "e" | "w";
@@ -51,13 +68,15 @@ export interface Prop {
   id: string;
   /** Model file name without `.obj`. */
   model: string;
-  /** Southwest cell of the footprint. */
+  /** Southwest cell of the footprint. May be fractional for a stacked part. */
   x: number;
   z: number;
   /** Footprint in cells. The model is centred on it. Defaults to 1×1. */
   w?: number;
   d?: number;
-  /** Clockwise degrees from north. */
+  /** Added to the footprint centre. */
+  y?: number;
+  /** Degrees around Y. 0 faces the model's +Z north. */
   yaw?: number;
   /** Uniform scale applied before `stretch`. */
   scale?: number;
@@ -71,25 +90,41 @@ export interface Prop {
   skipPrefix?: string[];
 }
 
-export type Body = "male" | "female" | "thin";
-
-export type Hair = "short" | "long" | "bun" | "ponytail" | "mohawk";
-
-export interface Colonist {
+export interface Figure {
   id: string;
+  /** Empty for an unlabeled mannequin. */
   name: string;
-  /** Starting cell. */
   x: number;
   z: number;
-  body: Body;
-  hair: Hair;
-  beard?: boolean;
-  hat?: boolean;
-  skin: string;
-  hairColor: string;
-  shirt: string;
-  pants: string;
-  hatColor?: string;
+  yaw?: number;
+  /** When true, the figure walks the open ground and keeps a name label. */
+  wander: boolean;
+  /** Model names without `.obj`, drawn in order. */
+  parts: string[];
+  /** Multiply colour for each part. */
+  tints: string[];
+}
+
+export interface Animal {
+  id: string;
+  name: string;
+  model: string;
+  /** Absent for animals that have no separate leg mesh, such as the cobra. */
+  leg: string | null;
+  x: number;
+  z: number;
+  w: number;
+  d: number;
+  yaw: number;
+  hips: [number, number, number][];
+  legLength: number;
+  legSwing: number;
+  legSplay: number;
+}
+
+export interface Mark {
+  x: number;
+  z: number;
 }
 
 /**
@@ -106,5 +141,7 @@ export interface Colony {
   doors: Door[];
   roofs: Roof[];
   props: Prop[];
-  colonists: Colonist[];
+  figures: Figure[];
+  animals: Animal[];
+  marks: Mark[];
 }

@@ -1,4 +1,604 @@
 {
+  "agave": {
+    "color": [
+      0.29,
+      0.54,
+      0.52
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_alpaca_body": {
+    "color": [
+      0.84,
+      0.74,
+      0.6
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_alpaca_head": {
+    "color": [
+      0.84,
+      0.74,
+      0.6
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_alpaca_leg": {
+    "color": [
+      0.7056,
+      0.6216,
+      0.504
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_bear_grizzly_body": {
+    "color": [
+      0.42,
+      0.3,
+      0.22
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_bear_grizzly_head": {
+    "color": [
+      0.42,
+      0.3,
+      0.22
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_bear_grizzly_leg": {
+    "color": [
+      0.3528,
+      0.252,
+      0.1848
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_bear_grizzly_muzzle": {
+    "color": [
+      0.62,
+      0.48,
+      0.34
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_bear_polar_body": {
+    "color": [
+      0.94,
+      0.93,
+      0.89
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_bear_polar_head": {
+    "color": [
+      0.94,
+      0.93,
+      0.89
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_bear_polar_leg": {
+    "color": [
+      0.7896,
+      0.7812,
+      0.7476
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_bison_acc": {
+    "color": [
+      0.27,
+      0.2,
+      0.16
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_bison_body": {
+    "color": [
+      0.4,
+      0.29,
+      0.21
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_bison_head": {
+    "color": [
+      0.24,
+      0.18,
+      0.15
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_bison_leg": {
+    "color": [
+      0.336,
+      0.2436,
+      0.1764
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_boomalope_acc": {
+    "color": [
+      0.88,
+      0.8,
+      0.44
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_boomalope_body": {
+    "color": [
+      0.74,
+      0.6,
+      0.5
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_boomalope_head": {
+    "color": [
+      0.74,
+      0.6,
+      0.5
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_boomalope_leg": {
+    "color": [
+      0.6216,
+      0.504,
+      0.42
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_boomrat_acc": {
+    "color": [
+      0.94,
+      0.72,
+      0.36
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_boomrat_body": {
+    "color": [
+      0.74,
+      0.4,
+      0.36
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_boomrat_head": {
+    "color": [
+      0.74,
+      0.4,
+      0.36
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_boomrat_leg": {
+    "color": [
+      0.6216,
+      0.336,
+      0.3024
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_capybara_body": {
+    "color": [
+      0.56,
+      0.42,
+      0.3
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_capybara_head": {
+    "color": [
+      0.56,
+      0.42,
+      0.3
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_capybara_leg": {
+    "color": [
+      0.4704,
+      0.3528,
+      0.252
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_caribou_belly": {
+    "color": [
+      0.88,
+      0.86,
+      0.82
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_caribou_body": {
+    "color": [
+      0.58,
+      0.52,
+      0.46
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_caribou_head": {
+    "color": [
+      0.58,
+      0.52,
+      0.46
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_caribou_leg": {
+    "color": [
+      0.4872,
+      0.4368,
+      0.3864
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cassowary_acc": {
+    "color": [
+      0.82,
+      0.2,
+      0.18
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cassowary_beak": {
+    "color": [
+      0.28,
+      0.26,
+      0.24
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cassowary_body": {
+    "color": [
+      0.15,
+      0.15,
+      0.17
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cassowary_head": {
+    "color": [
+      0.22,
+      0.42,
+      0.8
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cassowary_leg": {
+    "color": [
+      0.4,
+      0.38,
+      0.34
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cat_belly": {
+    "color": [
+      0.94,
+      0.9,
+      0.82
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cat_body": {
+    "color": [
+      0.82,
+      0.6,
+      0.36
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cat_head": {
+    "color": [
+      0.82,
+      0.6,
+      0.36
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cat_leg": {
+    "color": [
+      0.6888,
+      0.504,
+      0.3024
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_chicken_acc": {
+    "color": [
+      0.8,
+      0.18,
+      0.16
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_chicken_beak": {
+    "color": [
+      0.92,
+      0.7,
+      0.22
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_chicken_body": {
+    "color": [
+      0.92,
+      0.91,
+      0.87
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_chicken_head": {
+    "color": [
+      0.92,
+      0.91,
+      0.87
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_chicken_leg": {
+    "color": [
+      0.9,
+      0.72,
+      0.26
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_chinchilla_belly": {
+    "color": [
+      0.92,
+      0.91,
+      0.87
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_chinchilla_body": {
+    "color": [
+      0.66,
+      0.66,
+      0.71
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_chinchilla_head": {
+    "color": [
+      0.66,
+      0.66,
+      0.71
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_chinchilla_leg": {
+    "color": [
+      0.5544,
+      0.5544,
+      0.5964
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cobra_belly": {
+    "color": [
+      0.86,
+      0.8,
+      0.6
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cobra_body": {
+    "color": [
+      0.6,
+      0.5,
+      0.32
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cobra_hood": {
+    "color": [
+      0.5,
+      0.4,
+      0.26
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cougar_belly": {
+    "color": [
+      0.92,
+      0.86,
+      0.76
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cougar_body": {
+    "color": [
+      0.78,
+      0.62,
+      0.42
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cougar_head": {
+    "color": [
+      0.78,
+      0.62,
+      0.42
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cougar_leg": {
+    "color": [
+      0.6552,
+      0.5208,
+      0.3528
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cow_acc": {
+    "color": [
+      0.17,
+      0.16,
+      0.17
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cow_body": {
+    "color": [
+      0.92,
+      0.91,
+      0.87
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cow_head": {
+    "color": [
+      0.92,
+      0.91,
+      0.87
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cow_leg": {
+    "color": [
+      0.7728,
+      0.7644,
+      0.7308
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_cow_muzzle": {
+    "color": [
+      0.86,
+      0.66,
+      0.62
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
   "an_dark": {
     "color": [
       0.11,
@@ -9,6 +609,1796 @@
     "tint": false,
     "emissive": false
   },
+  "an_deer_belly": {
+    "color": [
+      0.9,
+      0.86,
+      0.78
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_deer_body": {
+    "color": [
+      0.64,
+      0.46,
+      0.3
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_deer_head": {
+    "color": [
+      0.64,
+      0.46,
+      0.3
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_deer_leg": {
+    "color": [
+      0.5376,
+      0.3864,
+      0.252
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_donkey_acc": {
+    "color": [
+      0.26,
+      0.23,
+      0.21
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_donkey_belly": {
+    "color": [
+      0.84,
+      0.82,
+      0.78
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_donkey_body": {
+    "color": [
+      0.56,
+      0.52,
+      0.48
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_donkey_head": {
+    "color": [
+      0.56,
+      0.52,
+      0.48
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_donkey_leg": {
+    "color": [
+      0.4704,
+      0.4368,
+      0.4032
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_donkey_muzzle": {
+    "color": [
+      0.86,
+      0.84,
+      0.8
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_dromedary_body": {
+    "color": [
+      0.8,
+      0.65,
+      0.45
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_dromedary_head": {
+    "color": [
+      0.8,
+      0.65,
+      0.45
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_dromedary_leg": {
+    "color": [
+      0.672,
+      0.546,
+      0.378
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_duck_beak": {
+    "color": [
+      0.92,
+      0.66,
+      0.2
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_duck_belly": {
+    "color": [
+      0.82,
+      0.78,
+      0.7
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_duck_body": {
+    "color": [
+      0.6,
+      0.48,
+      0.36
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_duck_head": {
+    "color": [
+      0.22,
+      0.4,
+      0.3
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_duck_leg": {
+    "color": [
+      0.92,
+      0.56,
+      0.2
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_elephant_body": {
+    "color": [
+      0.55,
+      0.54,
+      0.56
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_elephant_head": {
+    "color": [
+      0.55,
+      0.54,
+      0.56
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_elephant_leg": {
+    "color": [
+      0.462,
+      0.4536,
+      0.4704
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_elk_acc": {
+    "color": [
+      0.32,
+      0.23,
+      0.17
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_elk_belly": {
+    "color": [
+      0.72,
+      0.62,
+      0.48
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_elk_body": {
+    "color": [
+      0.54,
+      0.4,
+      0.28
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_elk_head": {
+    "color": [
+      0.54,
+      0.4,
+      0.28
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_elk_leg": {
+    "color": [
+      0.4536,
+      0.336,
+      0.2352
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_emu_beak": {
+    "color": [
+      0.26,
+      0.24,
+      0.22
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_emu_body": {
+    "color": [
+      0.42,
+      0.36,
+      0.32
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_emu_head": {
+    "color": [
+      0.36,
+      0.44,
+      0.56
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_emu_leg": {
+    "color": [
+      0.36,
+      0.33,
+      0.3
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_fox_arctic_body": {
+    "color": [
+      0.94,
+      0.94,
+      0.96
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_fox_arctic_head": {
+    "color": [
+      0.94,
+      0.94,
+      0.96
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_fox_arctic_leg": {
+    "color": [
+      0.7896,
+      0.7896,
+      0.8064
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_fox_fennec_belly": {
+    "color": [
+      0.92,
+      0.91,
+      0.87
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_fox_fennec_body": {
+    "color": [
+      0.88,
+      0.74,
+      0.54
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_fox_fennec_head": {
+    "color": [
+      0.88,
+      0.74,
+      0.54
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_fox_fennec_leg": {
+    "color": [
+      0.7392,
+      0.6216,
+      0.4536
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_fox_red_acc": {
+    "color": [
+      0.92,
+      0.91,
+      0.87
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_fox_red_belly": {
+    "color": [
+      0.92,
+      0.91,
+      0.87
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_fox_red_body": {
+    "color": [
+      0.82,
+      0.44,
+      0.2
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_fox_red_head": {
+    "color": [
+      0.82,
+      0.44,
+      0.2
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_fox_red_leg": {
+    "color": [
+      0.24,
+      0.18,
+      0.15
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_gazelle_belly": {
+    "color": [
+      0.92,
+      0.91,
+      0.87
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_gazelle_body": {
+    "color": [
+      0.82,
+      0.63,
+      0.42
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_gazelle_head": {
+    "color": [
+      0.82,
+      0.63,
+      0.42
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_gazelle_leg": {
+    "color": [
+      0.6888,
+      0.5292,
+      0.3528
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_goat_body": {
+    "color": [
+      0.84,
+      0.8,
+      0.72
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_goat_head": {
+    "color": [
+      0.84,
+      0.8,
+      0.72
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_goat_leg": {
+    "color": [
+      0.7056,
+      0.672,
+      0.6048
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_goose_acc": {
+    "color": [
+      0.62,
+      0.6,
+      0.58
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_goose_beak": {
+    "color": [
+      0.92,
+      0.56,
+      0.2
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_goose_body": {
+    "color": [
+      0.84,
+      0.83,
+      0.8
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_goose_head": {
+    "color": [
+      0.84,
+      0.83,
+      0.8
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_goose_leg": {
+    "color": [
+      0.92,
+      0.56,
+      0.2
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_guineapig_belly": {
+    "color": [
+      0.92,
+      0.91,
+      0.87
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_guineapig_body": {
+    "color": [
+      0.74,
+      0.54,
+      0.36
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_guineapig_head": {
+    "color": [
+      0.74,
+      0.54,
+      0.36
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_guineapig_leg": {
+    "color": [
+      0.6216,
+      0.4536,
+      0.3024
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_hare_body": {
+    "color": [
+      0.62,
+      0.5,
+      0.38
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_hare_head": {
+    "color": [
+      0.62,
+      0.5,
+      0.38
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_hare_leg": {
+    "color": [
+      0.5208,
+      0.42,
+      0.3192
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_hare_tail": {
+    "color": [
+      0.92,
+      0.91,
+      0.87
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_hoof": {
+    "color": [
+      0.21,
+      0.18,
+      0.16
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_horn": {
+    "color": [
+      0.85,
+      0.81,
+      0.69
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_horse_acc": {
+    "color": [
+      0.2,
+      0.14,
+      0.11
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_horse_body": {
+    "color": [
+      0.5,
+      0.33,
+      0.22
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_horse_head": {
+    "color": [
+      0.5,
+      0.33,
+      0.22
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_horse_leg": {
+    "color": [
+      0.42,
+      0.2772,
+      0.1848
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_husky_belly": {
+    "color": [
+      0.92,
+      0.91,
+      0.87
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_husky_body": {
+    "color": [
+      0.56,
+      0.58,
+      0.63
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_husky_head": {
+    "color": [
+      0.56,
+      0.58,
+      0.63
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_husky_leg": {
+    "color": [
+      0.88,
+      0.88,
+      0.88
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_husky_muzzle": {
+    "color": [
+      0.92,
+      0.91,
+      0.87
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_ibex_belly": {
+    "color": [
+      0.86,
+      0.8,
+      0.7
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_ibex_body": {
+    "color": [
+      0.68,
+      0.56,
+      0.42
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_ibex_head": {
+    "color": [
+      0.68,
+      0.56,
+      0.42
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_ibex_leg": {
+    "color": [
+      0.5712,
+      0.4704,
+      0.3528
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_iguana_acc": {
+    "color": [
+      0.3,
+      0.46,
+      0.24
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_iguana_belly": {
+    "color": [
+      0.7,
+      0.78,
+      0.46
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_iguana_body": {
+    "color": [
+      0.42,
+      0.6,
+      0.3
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_iguana_head": {
+    "color": [
+      0.42,
+      0.6,
+      0.3
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_iguana_leg": {
+    "color": [
+      0.3528,
+      0.504,
+      0.252
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_labrador_body": {
+    "color": [
+      0.86,
+      0.73,
+      0.48
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_labrador_head": {
+    "color": [
+      0.86,
+      0.73,
+      0.48
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_labrador_leg": {
+    "color": [
+      0.7224,
+      0.6132,
+      0.4032
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_lynx_belly": {
+    "color": [
+      0.92,
+      0.88,
+      0.8
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_lynx_body": {
+    "color": [
+      0.72,
+      0.64,
+      0.52
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_lynx_head": {
+    "color": [
+      0.72,
+      0.64,
+      0.52
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_lynx_leg": {
+    "color": [
+      0.6048,
+      0.5376,
+      0.4368
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_megascarab_body": {
+    "color": [
+      0.26,
+      0.3,
+      0.38
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_megascarab_leg": {
+    "color": [
+      0.182,
+      0.21,
+      0.266
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_megasloth_body": {
+    "color": [
+      0.46,
+      0.36,
+      0.28
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_megasloth_head": {
+    "color": [
+      0.62,
+      0.52,
+      0.4
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_megasloth_leg": {
+    "color": [
+      0.3864,
+      0.3024,
+      0.2352
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_megaspider_acc": {
+    "color": [
+      0.72,
+      0.62,
+      0.42
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_megaspider_body": {
+    "color": [
+      0.56,
+      0.42,
+      0.28
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_megaspider_leg": {
+    "color": [
+      0.392,
+      0.294,
+      0.196
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_monkey_body": {
+    "color": [
+      0.5,
+      0.36,
+      0.26
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_monkey_head": {
+    "color": [
+      0.5,
+      0.36,
+      0.26
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_monkey_leg": {
+    "color": [
+      0.42,
+      0.3024,
+      0.2184
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_monkey_muzzle": {
+    "color": [
+      0.84,
+      0.68,
+      0.54
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_muffalo_body": {
+    "color": [
+      0.47,
+      0.56,
+      0.66
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_muffalo_head": {
+    "color": [
+      0.34,
+      0.4,
+      0.48
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_muffalo_leg": {
+    "color": [
+      0.32,
+      0.37,
+      0.44
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_ostrich_beak": {
+    "color": [
+      0.8,
+      0.62,
+      0.42
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_ostrich_body": {
+    "color": [
+      0.18,
+      0.17,
+      0.17
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_ostrich_head": {
+    "color": [
+      0.86,
+      0.7,
+      0.66
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_ostrich_leg": {
+    "color": [
+      0.86,
+      0.7,
+      0.66
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_ostrich_tail": {
+    "color": [
+      0.92,
+      0.91,
+      0.87
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_panther_body": {
+    "color": [
+      0.17,
+      0.17,
+      0.2
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_panther_head": {
+    "color": [
+      0.17,
+      0.17,
+      0.2
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_panther_leg": {
+    "color": [
+      0.1428,
+      0.1428,
+      0.168
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_pig_body": {
+    "color": [
+      0.9,
+      0.68,
+      0.66
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_pig_head": {
+    "color": [
+      0.9,
+      0.68,
+      0.66
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_pig_leg": {
+    "color": [
+      0.756,
+      0.5712,
+      0.5544
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_pig_muzzle": {
+    "color": [
+      0.94,
+      0.6,
+      0.6
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_raccoon_acc": {
+    "color": [
+      0.2,
+      0.19,
+      0.19
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_raccoon_body": {
+    "color": [
+      0.52,
+      0.52,
+      0.52
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_raccoon_head": {
+    "color": [
+      0.34,
+      0.33,
+      0.33
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_raccoon_leg": {
+    "color": [
+      0.4368,
+      0.4368,
+      0.4368
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_raccoon_muzzle": {
+    "color": [
+      0.92,
+      0.91,
+      0.87
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_rat_body": {
+    "color": [
+      0.5,
+      0.44,
+      0.4
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_rat_head": {
+    "color": [
+      0.5,
+      0.44,
+      0.4
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_rat_leg": {
+    "color": [
+      0.42,
+      0.3696,
+      0.336
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_rat_tail": {
+    "color": [
+      0.84,
+      0.64,
+      0.62
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_rhinoceros_body": {
+    "color": [
+      0.52,
+      0.5,
+      0.48
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_rhinoceros_head": {
+    "color": [
+      0.52,
+      0.5,
+      0.48
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_rhinoceros_leg": {
+    "color": [
+      0.4368,
+      0.42,
+      0.4032
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_sheep_body": {
+    "color": [
+      0.9,
+      0.87,
+      0.8
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_sheep_head": {
+    "color": [
+      0.26,
+      0.23,
+      0.21
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_sheep_leg": {
+    "color": [
+      0.26,
+      0.23,
+      0.21
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_snowhare_body": {
+    "color": [
+      0.95,
+      0.95,
+      0.96
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_snowhare_head": {
+    "color": [
+      0.95,
+      0.95,
+      0.96
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_snowhare_leg": {
+    "color": [
+      0.798,
+      0.798,
+      0.8064
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_spelopede_body": {
+    "color": [
+      0.62,
+      0.56,
+      0.4
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_spelopede_leg": {
+    "color": [
+      0.434,
+      0.392,
+      0.28
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_squirrel_belly": {
+    "color": [
+      0.92,
+      0.86,
+      0.76
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_squirrel_body": {
+    "color": [
+      0.68,
+      0.42,
+      0.26
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_squirrel_head": {
+    "color": [
+      0.68,
+      0.42,
+      0.26
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_squirrel_leg": {
+    "color": [
+      0.5712,
+      0.3528,
+      0.2184
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_thrumbo_acc": {
+    "color": [
+      0.78,
+      0.82,
+      0.89
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_thrumbo_belly": {
+    "color": [
+      0.72,
+      0.77,
+      0.85
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_thrumbo_body": {
+    "color": [
+      0.9,
+      0.92,
+      0.95
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_thrumbo_head": {
+    "color": [
+      0.84,
+      0.87,
+      0.92
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_thrumbo_leg": {
+    "color": [
+      0.64,
+      0.69,
+      0.77
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_thrumbo_muzzle": {
+    "color": [
+      0.62,
+      0.66,
+      0.74
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_tortoise_acc": {
+    "color": [
+      0.44,
+      0.4,
+      0.24
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_tortoise_body": {
+    "color": [
+      0.54,
+      0.52,
+      0.34
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_tortoise_head": {
+    "color": [
+      0.54,
+      0.52,
+      0.34
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_tortoise_leg": {
+    "color": [
+      0.4536,
+      0.4368,
+      0.2856
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_turkey_acc": {
+    "color": [
+      0.78,
+      0.2,
+      0.18
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_turkey_beak": {
+    "color": [
+      0.88,
+      0.76,
+      0.46
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_turkey_body": {
+    "color": [
+      0.33,
+      0.25,
+      0.2
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_turkey_head": {
+    "color": [
+      0.46,
+      0.56,
+      0.74
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_turkey_leg": {
+    "color": [
+      0.62,
+      0.5,
+      0.42
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_turkey_tail": {
+    "color": [
+      0.52,
+      0.38,
+      0.26
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_warg_acc": {
+    "color": [
+      0.22,
+      0.15,
+      0.14
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_warg_body": {
+    "color": [
+      0.38,
+      0.25,
+      0.23
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_warg_head": {
+    "color": [
+      0.38,
+      0.25,
+      0.23
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_warg_leg": {
+    "color": [
+      0.3192,
+      0.21,
+      0.1932
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_wildboar_acc": {
+    "color": [
+      0.22,
+      0.17,
+      0.15
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_wildboar_body": {
+    "color": [
+      0.36,
+      0.28,
+      0.24
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_wildboar_head": {
+    "color": [
+      0.36,
+      0.28,
+      0.24
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_wildboar_leg": {
+    "color": [
+      0.3024,
+      0.2352,
+      0.2016
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_wolf_arctic_body": {
+    "color": [
+      0.92,
+      0.92,
+      0.94
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_wolf_arctic_head": {
+    "color": [
+      0.92,
+      0.92,
+      0.94
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_wolf_arctic_leg": {
+    "color": [
+      0.7728,
+      0.7728,
+      0.7896
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_wolf_timber_belly": {
+    "color": [
+      0.8,
+      0.78,
+      0.74
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_wolf_timber_body": {
+    "color": [
+      0.52,
+      0.5,
+      0.48
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_wolf_timber_head": {
+    "color": [
+      0.52,
+      0.5,
+      0.48
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_wolf_timber_leg": {
+    "color": [
+      0.4368,
+      0.42,
+      0.4032
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_yak_body": {
+    "color": [
+      0.27,
+      0.22,
+      0.2
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_yak_head": {
+    "color": [
+      0.27,
+      0.22,
+      0.2
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_yak_leg": {
+    "color": [
+      0.2268,
+      0.1848,
+      0.168
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_yorkie_body": {
+    "color": [
+      0.66,
+      0.5,
+      0.32
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_yorkie_head": {
+    "color": [
+      0.74,
+      0.58,
+      0.36
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "an_yorkie_leg": {
+    "color": [
+      0.5544,
+      0.42,
+      0.2688
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "armor": {
+    "color": [
+      0.74,
+      0.76,
+      0.74
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "armor_dark": {
+    "color": [
+      0.46,
+      0.48,
+      0.46
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
   "ash": {
     "color": [
       0.3,
@@ -16,6 +2406,16 @@
       0.27
     ],
     "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "bamboo": {
+    "color": [
+      0.62,
+      0.7,
+      0.36
+    ],
+    "map": "Bark",
     "tint": false,
     "emissive": false
   },
@@ -59,6 +2459,16 @@
     "tint": false,
     "emissive": false
   },
+  "bark_pale": {
+    "color": [
+      0.84,
+      0.82,
+      0.76
+    ],
+    "map": "Bark",
+    "tint": false,
+    "emissive": false
+  },
   "battery": {
     "color": [
       0.38,
@@ -79,6 +2489,36 @@
     "tint": false,
     "emissive": false
   },
+  "blade_a": {
+    "color": [
+      0.45,
+      0.58,
+      0.31
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "blade_b": {
+    "color": [
+      0.36,
+      0.48,
+      0.27
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "blade_c": {
+    "color": [
+      0.52,
+      0.64,
+      0.37
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
   "blanket": {
     "color": [
       0.44,
@@ -86,6 +2526,16 @@
       0.64
     ],
     "map": "Fabric",
+    "tint": false,
+    "emissive": false
+  },
+  "blood": {
+    "color": [
+      0.52,
+      0.12,
+      0.1
+    ],
+    "map": null,
     "tint": false,
     "emissive": false
   },
@@ -109,6 +2559,76 @@
     "tint": false,
     "emissive": false
   },
+  "bottle": {
+    "color": [
+      0.32,
+      0.22,
+      0.12
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "bowl": {
+    "color": [
+      0.78,
+      0.7,
+      0.58
+    ],
+    "map": "Wood",
+    "tint": false,
+    "emissive": false
+  },
+  "bramble": {
+    "color": [
+      0.42,
+      0.37,
+      0.22
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "brass": {
+    "color": [
+      0.8,
+      0.64,
+      0.3
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "cactus": {
+    "color": [
+      0.38,
+      0.54,
+      0.32
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "cap_glow": {
+    "color": [
+      0.56,
+      0.9,
+      0.74
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "cap_red": {
+    "color": [
+      0.72,
+      0.21,
+      0.19
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
   "charge": {
     "color": [
       0.45,
@@ -119,6 +2639,26 @@
     "tint": false,
     "emissive": true
   },
+  "chemfuel": {
+    "color": [
+      0.74,
+      0.3,
+      0.16
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "chocolate": {
+    "color": [
+      0.36,
+      0.22,
+      0.14
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
   "cloth_roll": {
     "color": [
       0.72,
@@ -126,6 +2666,86 @@
       0.34
     ],
     "map": "Fabric",
+    "tint": false,
+    "emissive": false
+  },
+  "coconut": {
+    "color": [
+      0.36,
+      0.26,
+      0.17
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "concrete": {
+    "color": [
+      0.62,
+      0.61,
+      0.58
+    ],
+    "map": "Stone",
+    "tint": false,
+    "emissive": false
+  },
+  "corn": {
+    "color": [
+      0.96,
+      0.84,
+      0.32
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "cotton": {
+    "color": [
+      0.97,
+      0.97,
+      0.95
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "crop_leaf": {
+    "color": [
+      0.36,
+      0.53,
+      0.25
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "crop_pale": {
+    "color": [
+      0.5,
+      0.62,
+      0.38
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "cushion": {
+    "color": [
+      0.62,
+      0.34,
+      0.3
+    ],
+    "map": "Fabric",
+    "tint": false,
+    "emissive": false
+  },
+  "egg": {
+    "color": [
+      0.94,
+      0.9,
+      0.82
+    ],
+    "map": null,
     "tint": false,
     "emissive": false
   },
@@ -138,6 +2758,26 @@
     "map": "Glow",
     "tint": false,
     "emissive": true
+  },
+  "fat": {
+    "color": [
+      0.92,
+      0.82,
+      0.74
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "felt": {
+    "color": [
+      0.2,
+      0.44,
+      0.28
+    ],
+    "map": "Fabric",
+    "tint": false,
+    "emissive": false
   },
   "flame": {
     "color": [
@@ -158,6 +2798,186 @@
     "map": "Glow",
     "tint": false,
     "emissive": true
+  },
+  "foil": {
+    "color": [
+      0.76,
+      0.76,
+      0.72
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "food_green": {
+    "color": [
+      0.44,
+      0.62,
+      0.3
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "food_paste": {
+    "color": [
+      0.66,
+      0.7,
+      0.52
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "food_stew": {
+    "color": [
+      0.66,
+      0.44,
+      0.26
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "food_yellow": {
+    "color": [
+      0.92,
+      0.78,
+      0.36
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "fruit_red": {
+    "color": [
+      0.86,
+      0.2,
+      0.2
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "fungus": {
+    "color": [
+      0.8,
+      0.72,
+      0.62
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "geyser_crust": {
+    "color": [
+      0.84,
+      0.8,
+      0.62
+    ],
+    "map": "Rock",
+    "tint": false,
+    "emissive": false
+  },
+  "geyser_rock": {
+    "color": [
+      0.44,
+      0.42,
+      0.4
+    ],
+    "map": "Rock",
+    "tint": false,
+    "emissive": false
+  },
+  "glass": {
+    "color": [
+      0.52,
+      0.7,
+      0.78
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "glass_dark": {
+    "color": [
+      0.16,
+      0.22,
+      0.27
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "glow": {
+    "color": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "map": "Glow",
+    "tint": false,
+    "emissive": true
+  },
+  "glow_amber": {
+    "color": [
+      1.0,
+      0.72,
+      0.3
+    ],
+    "map": "Glow",
+    "tint": false,
+    "emissive": true
+  },
+  "glow_green": {
+    "color": [
+      0.46,
+      0.94,
+      0.52
+    ],
+    "map": "Glow",
+    "tint": false,
+    "emissive": true
+  },
+  "glow_red": {
+    "color": [
+      0.98,
+      0.36,
+      0.3
+    ],
+    "map": "Glow",
+    "tint": false,
+    "emissive": true
+  },
+  "glow_screen": {
+    "color": [
+      0.48,
+      0.86,
+      0.96
+    ],
+    "map": "Glow",
+    "tint": false,
+    "emissive": true
+  },
+  "gold": {
+    "color": [
+      0.92,
+      0.74,
+      0.3
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "grip": {
+    "color": [
+      0.3,
+      0.22,
+      0.16
+    ],
+    "map": "Fabric",
+    "tint": false,
+    "emissive": false
   },
   "gun_dark": {
     "color": [
@@ -189,6 +3009,196 @@
     "tint": false,
     "emissive": false
   },
+  "gun_olive": {
+    "color": [
+      0.36,
+      0.4,
+      0.28
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "gun_white": {
+    "color": [
+      0.84,
+      0.86,
+      0.88
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "gun_wood": {
+    "color": [
+      0.5,
+      0.34,
+      0.21
+    ],
+    "map": "Wood",
+    "tint": false,
+    "emissive": false
+  },
+  "hay": {
+    "color": [
+      0.8,
+      0.72,
+      0.38
+    ],
+    "map": "Fabric",
+    "tint": false,
+    "emissive": false
+  },
+  "hay_a": {
+    "color": [
+      0.66,
+      0.68,
+      0.32
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "hay_b": {
+    "color": [
+      0.56,
+      0.6,
+      0.28
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "herb_green": {
+    "color": [
+      0.38,
+      0.54,
+      0.28
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "hull": {
+    "color": [
+      0.7,
+      0.73,
+      0.76
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "hull_dark": {
+    "color": [
+      0.4,
+      0.43,
+      0.47
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "ice": {
+    "color": [
+      0.82,
+      0.9,
+      0.96
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "jade": {
+    "color": [
+      0.4,
+      0.66,
+      0.46
+    ],
+    "map": "Stone",
+    "tint": false,
+    "emissive": false
+  },
+  "jelly": {
+    "color": [
+      0.96,
+      0.74,
+      0.22
+    ],
+    "map": "Glow",
+    "tint": false,
+    "emissive": false
+  },
+  "label": {
+    "color": [
+      0.88,
+      0.86,
+      0.78
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_anima": {
+    "color": [
+      0.94,
+      0.88,
+      0.92
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_anima_dk": {
+    "color": [
+      0.6956,
+      0.6688,
+      0.736
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_anima_lt": {
+    "color": [
+      1.0,
+      1.0,
+      0.9752
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_bamboo": {
+    "color": [
+      0.48,
+      0.64,
+      0.31
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_bamboo_dk": {
+    "color": [
+      0.3552,
+      0.4864,
+      0.248
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_bamboo_lt": {
+    "color": [
+      0.576,
+      0.7424,
+      0.3286
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
   "leaf_birch": {
     "color": [
       0.52,
@@ -214,6 +3224,156 @@
       0.624,
       0.7424,
       0.318
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_cypress": {
+    "color": [
+      0.25,
+      0.43,
+      0.27
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_cypress_dk": {
+    "color": [
+      0.185,
+      0.3268,
+      0.216
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_cypress_lt": {
+    "color": [
+      0.3,
+      0.4988,
+      0.2862
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_drago": {
+    "color": [
+      0.29,
+      0.45,
+      0.27
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_drago_dk": {
+    "color": [
+      0.2146,
+      0.342,
+      0.216
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_drago_lt": {
+    "color": [
+      0.348,
+      0.522,
+      0.2862
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_gauranlen": {
+    "color": [
+      0.82,
+      0.88,
+      0.62
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_gauranlen_dk": {
+    "color": [
+      0.6068,
+      0.6688,
+      0.496
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_gauranlen_lt": {
+    "color": [
+      0.984,
+      1.0,
+      0.6572
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_jungle": {
+    "color": [
+      0.34,
+      0.57,
+      0.27
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_jungle_dk": {
+    "color": [
+      0.2516,
+      0.4332,
+      0.216
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_jungle_lt": {
+    "color": [
+      0.408,
+      0.6612,
+      0.2862
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_maple": {
+    "color": [
+      0.8,
+      0.43,
+      0.19
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_maple_dk": {
+    "color": [
+      0.592,
+      0.3268,
+      0.152
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_maple_lt": {
+    "color": [
+      0.96,
+      0.4988,
+      0.2014
     ],
     "map": "Leaf",
     "tint": false,
@@ -279,6 +3439,96 @@
     "tint": false,
     "emissive": false
   },
+  "leaf_poplar": {
+    "color": [
+      0.44,
+      0.6,
+      0.27
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_poplar_dk": {
+    "color": [
+      0.3256,
+      0.456,
+      0.216
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_poplar_lt": {
+    "color": [
+      0.528,
+      0.696,
+      0.2862
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_teak": {
+    "color": [
+      0.31,
+      0.51,
+      0.23
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_teak_dk": {
+    "color": [
+      0.2294,
+      0.3876,
+      0.184
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_teak_lt": {
+    "color": [
+      0.372,
+      0.5916,
+      0.2438
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_willow": {
+    "color": [
+      0.42,
+      0.57,
+      0.31
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_willow_dk": {
+    "color": [
+      0.3108,
+      0.4332,
+      0.248
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "leaf_willow_lt": {
+    "color": [
+      0.504,
+      0.6612,
+      0.3286
+    ],
+    "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
   "linen": {
     "color": [
       0.9,
@@ -309,6 +3559,26 @@
     "tint": false,
     "emissive": false
   },
+  "meat": {
+    "color": [
+      0.7,
+      0.26,
+      0.24
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "medicine": {
+    "color": [
+      0.92,
+      0.92,
+      0.9
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
   "metal": {
     "color": [
       0.6,
@@ -329,11 +3599,141 @@
     "tint": false,
     "emissive": false
   },
+  "milk": {
+    "color": [
+      0.96,
+      0.96,
+      0.94
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "moss": {
+    "color": [
+      0.29,
+      0.43,
+      0.23
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "neutro": {
+    "color": [
+      0.3,
+      0.48,
+      0.72
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "paint_blue": {
+    "color": [
+      0.3,
+      0.4,
+      0.52
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "paint_cream": {
+    "color": [
+      0.78,
+      0.74,
+      0.62
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "paint_olive": {
+    "color": [
+      0.4,
+      0.42,
+      0.3
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "paint_red": {
+    "color": [
+      0.56,
+      0.24,
+      0.2
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
   "paper": {
     "color": [
       0.92,
       0.9,
       0.82
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "petal_orange": {
+    "color": [
+      0.96,
+      0.57,
+      0.21
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "petal_pink": {
+    "color": [
+      0.88,
+      0.52,
+      0.74
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "petal_red": {
+    "color": [
+      0.86,
+      0.23,
+      0.25
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "petal_white": {
+    "color": [
+      0.96,
+      0.96,
+      0.91
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "petal_yellow": {
+    "color": [
+      0.97,
+      0.82,
+      0.24
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "pill": {
+    "color": [
+      0.92,
+      0.88,
+      0.8
     ],
     "map": null,
     "tint": false,
@@ -346,6 +3746,156 @@
       0.94
     ],
     "map": "Fabric",
+    "tint": false,
+    "emissive": false
+  },
+  "pit": {
+    "color": [
+      0.1,
+      0.08,
+      0.07
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "plasteel": {
+    "color": [
+      0.7,
+      0.8,
+      0.84
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "pod": {
+    "color": [
+      0.56,
+      0.34,
+      0.16
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "pod_pale": {
+    "color": [
+      0.9,
+      0.86,
+      0.66
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "potato": {
+    "color": [
+      0.72,
+      0.56,
+      0.36
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "red_cross": {
+    "color": [
+      0.82,
+      0.18,
+      0.16
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "rice": {
+    "color": [
+      0.94,
+      0.92,
+      0.84
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "rice_a": {
+    "color": [
+      0.54,
+      0.7,
+      0.33
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "rubber": {
+    "color": [
+      0.13,
+      0.13,
+      0.14
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "rust": {
+    "color": [
+      0.5,
+      0.32,
+      0.22
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "rust_dark": {
+    "color": [
+      0.3,
+      0.21,
+      0.16
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "rust_light": {
+    "color": [
+      0.64,
+      0.44,
+      0.3
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "sack": {
+    "color": [
+      0.74,
+      0.64,
+      0.46
+    ],
+    "map": "Fabric",
+    "tint": false,
+    "emissive": false
+  },
+  "sack_dark": {
+    "color": [
+      0.56,
+      0.47,
+      0.33
+    ],
+    "map": "Fabric",
+    "tint": false,
+    "emissive": false
+  },
+  "shell_olive": {
+    "color": [
+      0.4,
+      0.44,
+      0.3
+    ],
+    "map": "Metal",
     "tint": false,
     "emissive": false
   },
@@ -366,6 +3916,36 @@
       0.22
     ],
     "map": "Leaf",
+    "tint": false,
+    "emissive": false
+  },
+  "silver": {
+    "color": [
+      0.82,
+      0.84,
+      0.86
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "slag": {
+    "color": [
+      0.4,
+      0.38,
+      0.36
+    ],
+    "map": "Rock",
+    "tint": false,
+    "emissive": false
+  },
+  "slag_metal": {
+    "color": [
+      0.52,
+      0.47,
+      0.42
+    ],
+    "map": "Metal",
     "tint": false,
     "emissive": false
   },
@@ -399,6 +3979,26 @@
     "tint": false,
     "emissive": false
   },
+  "steam_pipe": {
+    "color": [
+      0.58,
+      0.56,
+      0.52
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "stem": {
+    "color": [
+      0.36,
+      0.5,
+      0.24
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
   "stone": {
     "color": [
       0.54,
@@ -409,6 +4009,26 @@
     "tint": false,
     "emissive": false
   },
+  "strap": {
+    "color": [
+      0.34,
+      0.26,
+      0.18
+    ],
+    "map": "Fabric",
+    "tint": false,
+    "emissive": false
+  },
+  "string": {
+    "color": [
+      0.86,
+      0.82,
+      0.72
+    ],
+    "map": "Fabric",
+    "tint": false,
+    "emissive": false
+  },
   "stuff": {
     "color": [
       1.0,
@@ -416,6 +4036,46 @@
       1.0
     ],
     "map": "{stuff}",
+    "tint": true,
+    "emissive": false
+  },
+  "stuff_bag": {
+    "color": [
+      0.95,
+      0.92,
+      0.84
+    ],
+    "map": "Fabric",
+    "tint": true,
+    "emissive": false
+  },
+  "stuff_bag_dark": {
+    "color": [
+      0.7,
+      0.67,
+      0.6
+    ],
+    "map": "Fabric",
+    "tint": true,
+    "emissive": false
+  },
+  "stuff_block": {
+    "color": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "map": "Stone",
+    "tint": true,
+    "emissive": false
+  },
+  "stuff_block_dark": {
+    "color": [
+      0.8,
+      0.8,
+      0.8
+    ],
+    "map": "Stone",
     "tint": true,
     "emissive": false
   },
@@ -439,6 +4099,46 @@
     "tint": true,
     "emissive": false
   },
+  "stuff_fabric": {
+    "color": [
+      0.92,
+      0.92,
+      0.92
+    ],
+    "map": "Fabric",
+    "tint": true,
+    "emissive": false
+  },
+  "stuff_fabric_dark": {
+    "color": [
+      0.72,
+      0.72,
+      0.72
+    ],
+    "map": "Fabric",
+    "tint": true,
+    "emissive": false
+  },
+  "stuff_herb": {
+    "color": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "map": null,
+    "tint": true,
+    "emissive": false
+  },
+  "stuff_herb_dark": {
+    "color": [
+      0.78,
+      0.78,
+      0.78
+    ],
+    "map": null,
+    "tint": true,
+    "emissive": false
+  },
   "stuff_plain": {
     "color": [
       1.0,
@@ -459,6 +4159,26 @@
     "tint": true,
     "emissive": false
   },
+  "stuff_plain_deep": {
+    "color": [
+      0.6,
+      0.6,
+      0.6
+    ],
+    "map": null,
+    "tint": true,
+    "emissive": false
+  },
+  "stuff_plain_light": {
+    "color": [
+      1.12,
+      1.12,
+      1.12
+    ],
+    "map": null,
+    "tint": true,
+    "emissive": false
+  },
   "stuff_rock": {
     "color": [
       1.0,
@@ -466,6 +4186,16 @@
       1.0
     ],
     "map": "Rock",
+    "tint": true,
+    "emissive": false
+  },
+  "stuff_wool": {
+    "color": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "map": "Fabric",
     "tint": true,
     "emissive": false
   },
@@ -499,6 +4229,66 @@
     "tint": false,
     "emissive": false
   },
+  "twig_bark_pale": {
+    "color": [
+      0.84,
+      0.82,
+      0.76
+    ],
+    "map": "Bark",
+    "tint": false,
+    "emissive": false
+  },
+  "uranium": {
+    "color": [
+      0.36,
+      0.44,
+      0.32
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "visor": {
+    "color": [
+      0.14,
+      0.19,
+      0.24
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "visor_lit": {
+    "color": [
+      0.3,
+      0.62,
+      0.7
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "warning": {
+    "color": [
+      0.86,
+      0.3,
+      0.2
+    ],
+    "map": "Metal",
+    "tint": false,
+    "emissive": false
+  },
+  "water": {
+    "color": [
+      0.32,
+      0.52,
+      0.62
+    ],
+    "map": null,
+    "tint": false,
+    "emissive": false
+  },
   "water_dark": {
     "color": [
       0.2,
@@ -506,6 +4296,16 @@
       0.4
     ],
     "map": null,
+    "tint": false,
+    "emissive": false
+  },
+  "wood_end": {
+    "color": [
+      0.78,
+      0.62,
+      0.4
+    ],
+    "map": "Wood",
     "tint": false,
     "emissive": false
   }

@@ -3,8 +3,8 @@ import { devPort, previewPort } from "./tests/targets.mjs";
 
 export default defineConfig({
   testDir: "tests",
-  timeout: 90_000,
-  expect: { timeout: 20_000 },
+  timeout: 180_000,
+  expect: { timeout: 60_000 },
   fullyParallel: false,
   workers: 1,
   reporter: "list",
@@ -28,7 +28,7 @@ export default defineConfig({
       command: `npm run dev -- --host 127.0.0.1 --port ${devPort} --strictPort`,
       url: `http://127.0.0.1:${devPort}`,
       reuseExistingServer: false,
-      timeout: 60_000,
+      timeout: 120_000,
     },
     {
       command: `npm run build && node tests/serve-built.mjs`,

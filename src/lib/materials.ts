@@ -22,6 +22,19 @@ export const STUFF_TINT: Record<Stuff, THREE.Color> = {
 
 const ASSET = ISORIM;
 
+const usedTextures = new Set<string>();
+
+/** Remember a texture the scene actually requests, relative to `assets/isorim/`. */
+export function noteTexture(url: string): void {
+  const marker = "textures/";
+  const index = url.indexOf(marker);
+  if (index >= 0) usedTextures.add(url.slice(index));
+}
+
+export function usedTexturesList(): string[] {
+  return [...usedTextures];
+}
+
 export class MaterialLibrary {
   private readonly textures = new Map<string, THREE.Texture>();
   private readonly cache = new Map<string, THREE.MeshLambertMaterial>();
@@ -71,7 +84,9 @@ export class MaterialLibrary {
   }
 
   private loadSwatch(name: string): THREE.Texture {
-    const tex = this.loader.load(`${ASSET}/textures/swatches/${name}.png`);
+    const url = `${ASSET}/textures/swatches/${name}.png`;
+    noteTexture(url);
+    const tex = this.loader.load(url);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.RepeatWrapping;
@@ -90,6 +105,7 @@ export class MaterialLibrary {
 }
 
 export function loadTexture(url: string, repeat = false): THREE.Texture {
+  noteTexture(url);
   const tex = new THREE.TextureLoader().load(url);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 8;
