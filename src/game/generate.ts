@@ -1,17 +1,19 @@
 import type { SkillName, Skills, Mind, Inventory, ColonistSpawn } from "../engine/types";
 import { SKILL_NAMES } from "../engine/types";
 import type { Colony, Door, Figure, Prop, Roof, TerrainKind, Wall, WallKind } from "./map";
+import { GULCH_RIM } from "./map";
 
 /** Same default the wander tick uses, so a fresh page is one seed end to end. */
 export const DEFAULT_SEED = 0x6a1c;
 
-export const VALLEY_WIDTH = 180;
-export const VALLEY_HEIGHT = 132;
+/** East-west. Peaks occupy most of this; the floor is a narrow slot. */
+export const VALLEY_WIDTH = 120;
+/** North-south. This is the length of the gulch. */
+export const VALLEY_HEIGHT = 210;
 
 /** Earlier compact valley, kept so tests can require several times that area. */
 export const COMPACT_VALLEY_AREA = 64 * 56;
 
-const RIM = 8;
 const CAMP_W = 18;
 const CAMP_H = 14;
 
@@ -67,21 +69,14 @@ export function generateValley(seed: number): GeneratedValley {
   const rng = mulberry32(seed >>> 0);
   const founderCount = 3 + Math.floor(rng() * 3);
   const grid = new Grid();
-  grid.paintRim();
-
-  const camp = {
-    x: Math.floor(VALLEY_WIDTH * 0.4) + Math.floor(rng() * 20),
-    z: VALLEY_HEIGHT - RIM - CAMP_H - 6 - Math.floor(rng() * 4),
-    w: CAMP_W,
-    h: CAMP_H,
-  };
+  grid.carve(rng);
+  const camp = grid.campSite();
   grid.creek(rng, camp);
   grid.banks();
   grid.meadows(rng, camp);
   grid.soil(rng, camp);
   grid.forests(rng, camp);
-  grid.stone(rng);
-  grid.ore(rng);
+  grid.stone(rng, camp);
   const site = grid.startingSite(camp);
   grid.seal(camp.x + 2, camp.z + 8);
   const founders = chooseFounders(rng, founderCount);
@@ -98,6 +93,7 @@ export function generateValley(seed: number): GeneratedValley {
     width: VALLEY_WIDTH,
     height: VALLEY_HEIGHT,
     terrain: grid.terrain,
+    elevation: grid.elevation,
     walls: grid.walls,
     doors: grid.doors,
     roofs: grid.roofs,
@@ -213,46 +209,94 @@ function mindFor(rng: () => number, index: number): Mind {
 
 class Grid {
   readonly terrain: TerrainKind[] = Array.from({ length: VALLEY_WIDTH * VALLEY_HEIGHT }, () => "grass");
+  readonly elevation = new Uint8Array(VALLEY_WIDTH * VALLEY_HEIGHT);
   readonly walls: Wall[] = [];
   readonly doors: Door[] = [];
   readonly roofs: Roof[] = [];
   readonly props: Prop[] = [];
   private readonly wallAt = new Set<string>();
   private readonly occupied = new Uint8Array(VALLEY_WIDTH * VALLEY_HEIGHT);
+  private readonly axisX = new Float64Array(VALLEY_HEIGHT);
   private seq = 0;
+  private phase = 0;
+  private wobble = 1;
+  private campZ = 64;
+  private mouthX = 0;
+  private readonly openZ = 16;
 
-  paintRim(): void {
+  /**
+   * A long slot of floor, granite rising a tier per cell on both sides,
+   * peaks around the rim, and one two-cell cleft in the south wall.
+   */
+  carve(rng: () => number): void {
+    this.phase = rng() * Math.PI * 2;
+    this.wobble = 0.6 + rng() * 1.4;
+    this.campZ = 58 + Math.floor(rng() * 14);
+    let x = VALLEY_WIDTH * 0.5 + (rng() - 0.5) * 6;
     for (let z = 0; z < VALLEY_HEIGHT; z++) {
-      for (let x = 0; x < VALLEY_WIDTH; x++) {
-        const dist = edgeDist(x, z);
-        if (dist <= 2) {
-          this.terrain[z * VALLEY_WIDTH + x] = "roughStone";
-          this.addWall(x, z, "rock");
-        } else if (dist < RIM) {
-          this.terrain[z * VALLEY_WIDTH + x] = "gravel";
+      this.axisX[z] = x;
+      x += Math.sin(z * 0.045 + this.phase) * 0.18 + (rng() - 0.5) * 0.28;
+      x = clamp(x, VALLEY_WIDTH * 0.4, VALLEY_WIDTH * 0.6);
+    }
+    this.mouthX = Math.round(this.axisX[this.openZ]);
+
+    for (let z = 0; z < VALLEY_HEIGHT; z++) {
+      const half = this.halfWidth(z);
+      const center = this.axisX[z];
+      for (let cx = 0; cx < VALLEY_WIDTH; cx++) {
+        let elev = this.relief(cx, z, center, half);
+        if (this.onBorder(cx, z) && !this.inCleft(cx, z)) {
+          const jag = 8 + Math.round(Math.sin(cx * 0.31 + z * 0.17 + this.phase) * 2);
+          elev = Math.max(elev, jag);
         }
+        if (this.inCleft(cx, z)) elev = 0;
+        this.setElev(cx, z, elev);
       }
     }
+    this.crags(rng);
+  }
+
+  campSite(): { x: number; z: number; w: number; h: number } {
+    const z = this.campZ;
+    const center = Math.round(this.axisX[z + 4] ?? VALLEY_WIDTH / 2);
+    const x = clamp(center - 11, 2, VALLEY_WIDTH - CAMP_W - 2);
+    for (let zz = z; zz < z + CAMP_H; zz++) {
+      for (let xx = x; xx < x + CAMP_W; xx++) this.setElev(xx, zz, 0);
+    }
+    return { x, z, w: CAMP_W, h: CAMP_H };
   }
 
   creek(rng: () => number, camp: Cell & { w: number; h: number }): void {
-    let x = 14 + Math.floor(rng() * 22);
-    let z = RIM + 1;
-    const endZ = camp.z - 4;
-    while (z < endZ) {
-      if (!this.wallAt.has(key(x, z)) && !inRect(x, z, camp)) this.setTerrain(x, z, "stream");
-      const step = Math.floor(rng() * 5);
-      if (step === 0) x -= 1;
-      else if (step === 4) x += 1;
-      x = clamp(x, RIM + 2, VALLEY_WIDTH - RIM - 3);
-      z += 1;
+    let pondX = 0;
+    let pondZ = 0;
+    for (let z = this.openZ + 4; z < VALLEY_HEIGHT - 12; z++) {
+      const center = this.axisX[z];
+      let x = Math.round(center + Math.min(8, this.halfWidth(z) - 2));
+      if (inRect(x, z, camp)) x = camp.x + camp.w;
+      if (!inside(x, z) || this.elevation[z * VALLEY_WIDTH + x] !== 0) x = Math.round(center);
+      if (!inside(x, z) || inRect(x, z, camp) || this.wallAt.has(key(x, z))) continue;
+      if (this.elevation[z * VALLEY_WIDTH + x] !== 0) continue;
+      this.setTerrain(x, z, "stream");
+      const beside = x - 1;
+      if (
+        inside(beside, z)
+        && this.elevation[z * VALLEY_WIDTH + beside] === 0
+        && !inRect(beside, z, camp)
+        && !this.wallAt.has(key(beside, z))
+        && rng() > 0.35
+      ) {
+        this.setTerrain(beside, z, "stream");
+      }
+      pondX = x;
+      pondZ = z;
     }
     for (let dz = -1; dz <= 1; dz++) {
       for (let dx = -1; dx <= 1; dx++) {
-        const px = x + dx;
-        const pz = z + dz;
-        if (this.wallAt.has(key(px, pz)) || inRect(px, pz, camp)) continue;
-        if (px <= 2 || pz <= 2 || px >= VALLEY_WIDTH - 3 || pz >= VALLEY_HEIGHT - 3) continue;
+        const px = pondX + dx;
+        const pz = pondZ + dz;
+        if (!inside(px, pz) || inRect(px, pz, camp) || this.wallAt.has(key(px, pz))) continue;
+        if (this.elevation[pz * VALLEY_WIDTH + px] !== 0) continue;
+        if (this.onBorder(px, pz)) continue;
         this.setTerrain(px, pz, "water");
       }
     }
@@ -272,69 +316,54 @@ class Grid {
 
   meadows(rng: () => number, camp: Cell & { w: number; h: number }): void {
     for (let n = 0; n < 8; n++) {
-      const cx = RIM + 8 + Math.floor(rng() * (VALLEY_WIDTH - RIM * 2 - 16));
-      const cz = RIM + 8 + Math.floor(rng() * (VALLEY_HEIGHT - RIM * 2 - 16));
-      const radius = 8 + Math.floor(rng() * 8);
-      this.disk(cx, cz, radius, camp);
+      const z = this.openZ + 8 + Math.floor(rng() * (VALLEY_HEIGHT - this.openZ - 24));
+      const x = Math.round(this.axisX[z] + (rng() - 0.5) * 8);
+      this.disk(x, z, 4 + Math.floor(rng() * 3), camp);
     }
   }
 
   soil(rng: () => number, camp: Cell & { w: number; h: number }): void {
-    this.fillRect(camp.x + 1, camp.z - 5, 8, 4, "soilRich", true);
+    this.fillRect(camp.x + 1, camp.z + camp.h + 1, 8, 4, "soilRich", true);
     for (let n = 0; n < 5; n++) {
-      const x = RIM + 2 + Math.floor(rng() * (VALLEY_WIDTH - RIM * 2 - 10));
-      const z = RIM + 2 + Math.floor(rng() * (Math.max(1, camp.z - RIM - 8)));
-      this.fillRect(x, z, 6, 4, n === 0 ? "soil" : "soilRich", true);
+      const z = this.openZ + 10 + Math.floor(rng() * (VALLEY_HEIGHT - this.openZ - 28));
+      const x = Math.round(this.axisX[z] - 4 - rng() * 4);
+      this.fillRect(x, z, 5, 3, n === 0 ? "soil" : "soilRich", true);
     }
   }
 
   forests(rng: () => number, camp: Cell & { w: number; h: number }): void {
-    for (let n = 0; n < 16; n++) {
-      const cx = RIM + 4 + Math.floor(rng() * (VALLEY_WIDTH - RIM * 2 - 8));
-      const cz = RIM + 4 + Math.floor(rng() * (Math.max(1, camp.z - RIM - 6)));
-      const radius = 6 + Math.floor(rng() * 5);
+    for (let n = 0; n < 18; n++) {
+      const z = this.openZ + 6 + Math.floor(rng() * (VALLEY_HEIGHT - this.openZ - 22));
+      const side = rng() < 0.5 ? -1 : 1;
+      const x = Math.round(this.axisX[z] + side * (4 + rng() * 5));
       let placed = 0;
-      for (let z = cz - radius; z <= cz + radius; z += 3) {
-        for (let x = cx - radius; x <= cx + radius; x += 3) {
-          if ((x - cx) ** 2 + (z - cz) ** 2 > radius * radius) continue;
-          if (rng() > 0.72) continue;
-          if (this.tryTree(rng, x, z, camp)) placed += 1;
+      for (let dz = -2; dz <= 2; dz += 2) {
+        for (let dx = -2; dx <= 2; dx += 2) {
+          if (rng() > 0.62) continue;
+          if (this.tryTree(rng, x + dx, z + dz, camp)) placed += 1;
         }
       }
-      if (placed === 0) this.tryTree(rng, cx, cz, camp);
+      if (placed === 0) this.tryTree(rng, x, z, camp);
     }
   }
 
-  stone(rng: () => number): void {
-    for (const side of [5, VALLEY_WIDTH - 6]) {
-      for (let z = 16; z < VALLEY_HEIGHT - 18; z += 18) {
-        const jitter = Math.floor(rng() * 4);
-        for (let n = 0; n < 3; n++) {
-          const model = BOULDERS[Math.floor(rng() * BOULDERS.length)];
-          this.tryProp({
-            model,
-            x: side,
-            z: z + jitter + n * 2,
-            w: 1,
-            d: 1,
-            stuff: "Stone",
-            blocks: true,
-          });
-        }
-      }
-    }
-  }
-
-  ore(rng: () => number): void {
-    for (const x of [2, VALLEY_WIDTH - 3]) {
-      for (let n = 0; n < 4; n++) {
-        const z0 = 18 + Math.floor(rng() * (VALLEY_HEIGHT - 46));
-        for (let dz = 0; dz < 5; dz++) this.rekind(x, z0 + dz, "rockOre");
-        const jut = x === 2 ? 5 : VALLEY_WIDTH - 6;
-        this.addWall(jut, z0 + 1, "rockOre");
-        this.addWall(jut, z0 + 2, "rockOre");
-        this.setTerrain(jut, z0 + 1, "roughStone");
-        this.setTerrain(jut, z0 + 2, "roughStone");
+  stone(rng: () => number, camp: Cell & { w: number; h: number }): void {
+    for (let z = this.openZ + 8; z < VALLEY_HEIGHT - 14; z += 12) {
+      for (const dir of [-1, 1] as const) {
+        const cliff = this.cliffX(z, dir, 1);
+        if (cliff < 0) continue;
+        const x = cliff - dir;
+        if (inRect(x, z, camp) || inRect(x, z + 1, camp)) continue;
+        const model = BOULDERS[Math.floor(rng() * BOULDERS.length)];
+        this.tryProp({
+          model,
+          x,
+          z,
+          w: 1,
+          d: 1,
+          stuff: "Stone",
+          blocks: true,
+        });
       }
     }
   }
@@ -407,6 +436,77 @@ class Grid {
     return cells;
   }
 
+  private halfWidth(z: number): number {
+    if (z < this.openZ || z > VALLEY_HEIGHT - 10) return 0;
+    const opened = (z - this.openZ) / 14;
+    if (opened < 1) return 2 + opened * 8;
+    const camp0 = this.campZ - 2;
+    const camp1 = this.campZ + CAMP_H + 6;
+    if (z >= camp0 && z < camp1) return 17;
+    return 10 + Math.sin(z * 0.05 + this.phase) * this.wobble;
+  }
+
+  private relief(x: number, z: number, center: number, half: number): number {
+    const dx = Math.abs(x - center);
+    if (dx <= half) return 0;
+    const rise = dx - half;
+    let elev = rise < 1.15 ? 1 : Math.min(9, 3 + Math.ceil((rise - 1.15) * 1.8));
+    if (elev >= 3) {
+      const ridge = Math.sin(x * 0.23 + this.phase) * Math.cos(z * 0.08 + this.phase * 0.4);
+      const crest = Math.sin((x + z) * 0.045 + this.phase);
+      elev = clamp(Math.round(elev + ridge * 2.4 + crest * 1.8), 3, 11);
+    }
+    return elev;
+  }
+
+  private inCleft(x: number, z: number): boolean {
+    if (z > this.openZ + 1) return false;
+    return x === this.mouthX || x === this.mouthX + 1;
+  }
+
+  private onBorder(x: number, z: number): boolean {
+    return x === 0 || z === 0 || x === VALLEY_WIDTH - 1 || z === VALLEY_HEIGHT - 1;
+  }
+
+  private setElev(x: number, z: number, elev: number): void {
+    if (!inside(x, z)) return;
+    const tier = clamp(elev, 0, 11);
+    const index = z * VALLEY_WIDTH + x;
+    this.elevation[index] = tier;
+    if (tier === 0) this.terrain[index] = "grass";
+    else if (tier === 1) this.terrain[index] = "gravel";
+    else this.terrain[index] = "roughStone";
+  }
+
+  private crags(rng: () => number): void {
+    for (const dir of [-1, 1] as const) {
+      for (let n = 0; n < 4; n++) {
+        const z0 = 28 + Math.floor(rng() * (VALLEY_HEIGHT - 56));
+        for (let dz = 0; dz < 6; dz++) {
+          const x = this.cliffX(z0 + dz, dir, GULCH_RIM);
+          if (x >= 0) this.addWall(x, z0 + dz, "rockOre");
+        }
+      }
+    }
+    for (let z = 24; z < VALLEY_HEIGHT - 16; z += 7) {
+      const west = this.cliffX(z, -1, 2);
+      if (west >= 0) this.addWall(west, z, "rock");
+      const east = this.cliffX(z + 3, 1, 2);
+      if (east >= 0) this.addWall(east, z + 3, "rock");
+    }
+  }
+
+  private cliffX(z: number, dir: number, minElev: number): number {
+    if (z < 0 || z >= VALLEY_HEIGHT) return -1;
+    const center = Math.round(this.axisX[z] ?? 0);
+    for (let step = 1; step < 48; step++) {
+      const x = center + dir * step;
+      if (!inside(x, z)) return -1;
+      if (this.elevation[z * VALLEY_WIDTH + x] >= minElev) return x;
+    }
+    return -1;
+  }
+
   private building(box: { x: number; z: number; w: number; d: number }, style: Roof["style"], id: string): void {
     const door = { x: box.x + Math.floor(box.w / 2), z: box.z };
     for (let z = box.z; z < box.z + box.d; z++) {
@@ -443,7 +543,7 @@ class Grid {
     for (let z = cz - radius; z <= cz + radius; z++) {
       for (let x = cx - radius; x <= cx + radius; x++) {
         if ((x - cx) ** 2 + (z - cz) ** 2 > radius * radius) continue;
-        if (!inside(x, z) || edgeDist(x, z) <= 4 || inRect(x, z, camp)) continue;
+        if (!inside(x, z) || this.elevation[z * VALLEY_WIDTH + x] !== 0 || inRect(x, z, camp)) continue;
         const kind = this.terrain[z * VALLEY_WIDTH + x];
         if (kind === "grass") this.terrain[z * VALLEY_WIDTH + x] = "grassRich";
       }
@@ -453,7 +553,7 @@ class Grid {
   private fillRect(x0: number, z0: number, w: number, d: number, kind: TerrainKind, skipReserved: boolean): void {
     for (let z = z0; z < z0 + d; z++) {
       for (let x = x0; x < x0 + w; x++) {
-        if (!inside(x, z) || edgeDist(x, z) <= 2) continue;
+        if (!inside(x, z) || this.elevation[z * VALLEY_WIDTH + x] !== 0) continue;
         const current = this.terrain[z * VALLEY_WIDTH + x];
         if (current === "water" || current === "stream" || current === "roughStone") continue;
         if (skipReserved && current === "woodFloor") continue;
@@ -466,8 +566,22 @@ class Grid {
     if (inRect(x, z, camp) || inRect(x + 1, z, camp) || inRect(x, z + 1, camp) || inRect(x + 1, z + 1, camp)) {
       return false;
     }
+    if (!this.treeFits(x, z)) return false;
     const model = TREES[Math.floor(rng() * TREES.length)];
     return this.tryProp({ model, x, z, w: 2, d: 2, scale: 2.2, blocks: true });
+  }
+
+  /** Keep the middle of the floor open so the gulch stays one walk. */
+  private treeFits(x: number, z: number): boolean {
+    for (let dz = 0; dz < 2; dz++) {
+      for (let dx = 0; dx < 2; dx++) {
+        const px = x + dx;
+        const pz = z + dz;
+        if (!inside(px, pz) || this.elevation[pz * VALLEY_WIDTH + px] !== 0) return false;
+        if (Math.abs(px - this.axisX[pz]) < 3.2) return false;
+      }
+    }
+    return true;
   }
 
   private tryProp(prop: Omit<Prop, "id">): boolean {
@@ -503,6 +617,7 @@ class Grid {
   private blocked(x: number, z: number): boolean {
     if (!inside(x, z)) return true;
     if (this.wallAt.has(key(x, z))) return true;
+    if (this.elevation[z * VALLEY_WIDTH + x] >= 1) return true;
     if (this.occupied[z * VALLEY_WIDTH + x]) return true;
     const kind = this.terrain[z * VALLEY_WIDTH + x];
     return kind === "water" || kind === "stream";
@@ -512,11 +627,6 @@ class Grid {
     if (!inside(x, z) || this.wallAt.has(key(x, z))) return;
     this.wallAt.add(key(x, z));
     this.walls.push({ x, z, kind });
-  }
-
-  private rekind(x: number, z: number, kind: WallKind): void {
-    const wall = this.walls.find((item) => item.x === x && item.z === z);
-    if (wall) wall.kind = kind;
   }
 
   private setTerrain(x: number, z: number, kind: TerrainKind): void {

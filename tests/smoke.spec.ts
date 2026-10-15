@@ -55,6 +55,9 @@ for (const target of smokeTargets) {
     await expect(page.locator("#seed-value")).toHaveText("6a1c");
     await expect(page.getByRole("button", { name: "Reroll" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Begin" })).toBeVisible();
+    const credit = page.getByRole("link", { name: "Assets: IsoRim by kndzio (MIT)" });
+    await expect(credit).toBeVisible();
+    await expect(credit).toHaveAttribute("href", "https://github.com/kndzio/IsoRim");
     await expect(page.locator("#loading-screen")).toHaveCount(0);
     await beginAndWaitForValley(page);
     await expect(page.locator("canvas")).toBeVisible();
@@ -62,6 +65,8 @@ for (const target of smokeTargets) {
     await expect(page.locator("#seed")).toHaveText("Seed 6a1c");
     await expect(page.locator("#new-valley")).toBeVisible();
     await expect(page.locator("#status")).toHaveText("Near walls fold away as you orbit.");
+    await expect(page.locator("#hud .credit a")).toBeVisible();
+    await expect(page.locator("#hud .credit a")).toHaveAttribute("href", "https://github.com/kndzio/IsoRim");
     await expect(page.locator(".label", { hasText: "Nell" })).toBeVisible();
     await expect.poll(() => page.evaluate(() => window.__gulch?.tick ?? 0)).toBeGreaterThan(0);
     const mind = await page.evaluate(() => {

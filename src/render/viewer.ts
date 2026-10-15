@@ -35,6 +35,7 @@ export function mount(root: HTMLElement, gate: LoadGate, seed: number): void {
     <p class="place">A hidden valley in Colorado</p>
     <p id="seed">Seed ${formatSeed(seed)}</p>
     <p class="hint">Drag to pan · scroll to zoom · right-drag to orbit</p>
+    <p class="credit"><a href="https://github.com/kndzio/IsoRim" target="_blank" rel="noreferrer">Assets: IsoRim by kndzio (MIT)</a></p>
     <p id="status">Loading IsoRim models…</p>
     <button type="button" id="new-valley">New valley</button>
   `;
@@ -84,13 +85,13 @@ async function boot(
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xc5d0b4);
   const span = Math.max(colony.width, colony.height);
-  scene.fog = new THREE.Fog(0xc5d0b4, 90, span * 1.35);
+  scene.fog = new THREE.Fog(0xc5d0b4, 110, span * 1.55);
 
   const hx = spawns.reduce((sum, spawn) => sum + spawn.x, 0) / Math.max(1, spawns.length);
   const hz = spawns.reduce((sum, spawn) => sum + spawn.z, 0) / Math.max(1, spawns.length);
   const viewHeight = 46;
   const camera = new THREE.OrthographicCamera(-viewHeight, viewHeight, viewHeight / 2, -viewHeight / 2, 0.1, span * 4);
-  camera.position.set(hx + 28, 36, hz - 32);
+  camera.position.set(hx + 8, 64, hz - 30);
 
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.target.set(hx, 0.3, hz);
@@ -111,7 +112,7 @@ async function boot(
   scene.add(new THREE.HemisphereLight(0xd7e4c8, 0x6a5436, 0.62));
   scene.add(new THREE.AmbientLight(0xfff4e4, 0.28));
   const sun = new THREE.DirectionalLight(0xfff0d2, 1.15);
-  sun.position.set(hx + 40, 52, hz - 24);
+  sun.position.set(hx + 36, 88, hz - 18);
   sun.target.position.set(hx, 0, hz);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
@@ -230,8 +231,8 @@ async function boot(
     camera.top = viewHeight / 2;
     camera.bottom = -viewHeight / 2;
     camera.updateProjectionMatrix();
-    const zoomForHeight = viewHeight / (colony.height * 1.08);
-    const zoomForWidth = (viewHeight * aspect) / (colony.width * 1.08);
+    const zoomForHeight = viewHeight / (colony.height * 1.75);
+    const zoomForWidth = (viewHeight * aspect) / (colony.width * 1.75);
     controls.minZoom = Math.min(zoomForHeight, zoomForWidth, 1);
     renderer.setSize(window.innerWidth, window.innerHeight);
   };

@@ -72,6 +72,24 @@ canvas {
   margin-top: 6px;
 }
 
+#hud .credit {
+  margin-top: 8px;
+}
+
+#hud .credit a,
+.title-credit a {
+  color: #e4c98a;
+  pointer-events: auto;
+  text-decoration: none;
+}
+
+#hud .credit a:hover,
+#hud .credit a:focus-visible,
+.title-credit a:hover,
+.title-credit a:focus-visible {
+  text-decoration: underline;
+}
+
 #hud.is-concealed,
 #labels.is-concealed {
   display: none;
@@ -302,6 +320,13 @@ canvas {
 #begin:focus-visible {
   background: rgba(228, 201, 138, 0.18);
   outline: none;
+}
+
+.title-credit {
+  margin: 1.15rem 0 0;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
 }
 
 #loading-screen {

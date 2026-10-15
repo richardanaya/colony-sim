@@ -30,6 +30,12 @@ export type Stuff = "Wood" | "Stone" | "Metal" | "Fabric";
 
 export type WallKind = "planks" | "bricks" | "stone" | "metal" | "rock" | "rockOre" | "sandbags";
 
+/** World units for one elevation step. Cliff faces are this tall. */
+export const TIER_HEIGHT = 4.2;
+
+/** Tiers at or above this close the gulch. The valley floor is 0. */
+export const GULCH_RIM = 3;
+
 export type RoofStyle = "terracotta" | "thatch" | "tin" | "slate";
 
 /** A side of a building the camera can stand on. */
@@ -140,6 +146,11 @@ export interface Colony {
   height: number;
   /** Row-major, index = z * width + x. z = 0 is the south edge. */
   terrain: TerrainKind[];
+  /**
+   * Height of each cell in cliff tiers. 0 is the valley floor.
+   * The renderer stacks rock faces from this; it is not a flat wall ring.
+   */
+  elevation: Uint8Array;
   walls: Wall[];
   doors: Door[];
   roofs: Roof[];

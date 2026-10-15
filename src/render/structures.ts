@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { ISORIM } from "../assets/paths";
-import type { Colony, Side, WallKind } from "../game/map";
+import { TIER_HEIGHT, type Colony, type Side, type WallKind } from "../game/map";
 import { geometryFrom, pushQuad } from "./geometry";
 import { loadTexture } from "./materials";
 
@@ -76,17 +76,18 @@ export function buildStructures(colony: Colony): StructureResult {
   for (const wall of colony.walls) {
     const { x, z, kind } = wall;
     const height = WALL_FILES[kind].height;
+    const y0 = (colony.elevation[z * colony.width + x] ?? 0) * TIER_HEIGHT;
     if (kind === "rock" || kind === "rockOre") {
-      writeWallSides(x, z, height, walls, cliffBucket(cliffSides, kind));
-      writeWallTop(x, z, height, cliffBucket(cliffTops, kind));
+      writeWallSides(x, z, y0, height, walls, cliffBucket(cliffSides, kind));
+      writeWallTop(x, z, y0 + height, cliffBucket(cliffTops, kind));
       continue;
     }
     const sides = new THREE.Mesh(
-      wallSidesGeometry(x, z, height, walls),
+      wallSidesGeometry(x, z, y0, height, walls),
       new THREE.MeshLambertMaterial({ color: WALL_FILES[kind].color, map: sideTex[kind] }),
     );
     const top = new THREE.Mesh(
-      wallTopGeometry(x, z, height),
+      wallTopGeometry(x, z, y0 + height),
       new THREE.MeshLambertMaterial({ color: WALL_FILES[kind].color, map: topTex[kind] }),
     );
     sides.castShadow = true;
@@ -170,20 +171,22 @@ function facadeOf(x: number, z: number, interior: Set<string>): Side | null {
   return sides[0] ?? null;
 }
 
-function wallSidesGeometry(x: number, z: number, h: number, walls: Set<string>): THREE.BufferGeometry {
+function wallSidesGeometry(x: number, z: number, y0: number, h: number, walls: Set<string>): THREE.BufferGeometry {
   const data = { pos: [] as number[], nrm: [] as number[], uv: [] as number[] };
-  writeWallSides(x, z, h, walls, data);
+  writeWallSides(x, z, y0, h, walls, data);
   return geometryFrom(THREE, data.pos, data.nrm, data.uv);
 }
 
 function writeWallSides(
   x: number,
   z: number,
+  y0: number,
   h: number,
   walls: Set<string>,
   dest: { pos: number[]; nrm: number[]; uv: number[] },
 ): void {
   const { pos, nrm, uv } = dest;
+  const y1 = y0 + h;
   const v1 = h / SIDE_TEX_H;
 
   const faces: { nx: number; nz: number; corners: [number, number, number][]; u0: number; u1: number }[] = [];
@@ -194,10 +197,10 @@ function writeWallSides(
       u0: x * 0.5,
       u1: (x + 1) * 0.5,
       corners: [
-        [x, 0, z],
-        [x + 1, 0, z],
-        [x + 1, h, z],
-        [x, h, z],
+        [x, y0, z],
+        [x + 1, y0, z],
+        [x + 1, y1, z],
+        [x, y1, z],
       ],
     });
   }
@@ -208,10 +211,10 @@ function writeWallSides(
       u0: (x + 1) * 0.5,
       u1: x * 0.5,
       corners: [
-        [x + 1, 0, z + 1],
-        [x, 0, z + 1],
-        [x, h, z + 1],
-        [x + 1, h, z + 1],
+        [x + 1, y0, z + 1],
+        [x, y0, z + 1],
+        [x, y1, z + 1],
+        [x + 1, y1, z + 1],
       ],
     });
   }
@@ -222,10 +225,10 @@ function writeWallSides(
       u0: z * 0.5,
       u1: (z + 1) * 0.5,
       corners: [
-        [x + 1, 0, z],
-        [x + 1, 0, z + 1],
-        [x + 1, h, z + 1],
-        [x + 1, h, z],
+        [x + 1, y0, z],
+        [x + 1, y0, z + 1],
+        [x + 1, y1, z + 1],
+        [x + 1, y1, z],
       ],
     });
   }
@@ -236,10 +239,10 @@ function writeWallSides(
       u0: (z + 1) * 0.5,
       u1: z * 0.5,
       corners: [
-        [x, 0, z + 1],
-        [x, 0, z],
-        [x, h, z],
-        [x, h, z + 1],
+        [x, y0, z + 1],
+        [x, y0, z],
+        [x, y1, z],
+        [x, y1, z + 1],
       ],
     });
   }
