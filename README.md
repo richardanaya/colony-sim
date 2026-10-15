@@ -43,7 +43,7 @@ GitHub Pages serves this repository root as https://richardanaya.github.io/galts
 
 ## Data
 
-`src/data/layout.json` is the whole scene (terrain, walls, doors, roofs, props, people, and animals), written by `tools/build_layout.py`. The generator still calls that map Hearthstead. The game presents the same geometry as Galt's Gulch. Coordinates are in cells, +X east and +Z north. `src/data/manifest.json` lists every IsoRim model and texture the scene is required to load.
+The valley is generated from a seed in `src/game/generate.ts`: cliffs, a creek, meadows, soil, forest, ore, stone, a cabin, a store, and three to five founders. The title shows the seed and can reroll it. Coordinates are in cells, +X east and +Z north. `src/data/manifest.json` lists the IsoRim models and textures the packs can serve. `tools/build_layout.py` can still write the old full-catalog Hearthstead layout to `src/data/layout.json`. The game does not load that file.
 
 ## Assets
 

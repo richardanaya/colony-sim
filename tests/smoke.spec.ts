@@ -52,11 +52,15 @@ for (const target of smokeTargets) {
     await expect(page.locator(".lede")).toHaveText(
       "People came here to work, to trade, and to live by their own judgment. No one is forced to live for anyone else.",
     );
+    await expect(page.locator("#seed-value")).toHaveText("6a1c");
+    await expect(page.getByRole("button", { name: "Reroll" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Begin" })).toBeVisible();
     await expect(page.locator("#loading-screen")).toHaveCount(0);
     await beginAndWaitForValley(page);
     await expect(page.locator("canvas")).toBeVisible();
     await expect(page.locator("#hud .hint")).toHaveText("Drag to pan · scroll to zoom · right-drag to orbit");
+    await expect(page.locator("#seed")).toHaveText("Seed 6a1c");
+    await expect(page.locator("#new-valley")).toBeVisible();
     await expect(page.locator("#status")).toHaveText("Near walls fold away as you orbit.");
     await expect(page.locator(".label", { hasText: "Nell" })).toBeVisible();
     await expect.poll(() => page.evaluate(() => window.__gulch?.tick ?? 0)).toBeGreaterThan(0);
@@ -68,14 +72,21 @@ for (const target of smokeTargets) {
         stated: founder?.mind.stated,
         receptivity: founder?.mind.receptivity,
         goods: founder ? Object.keys(founder.mind.inventory).length : 0,
+        food: founder?.mind.inventory.food ?? 0,
         hasResearch: Boolean(saved && saved.research),
         active: saved ? saved.research.active : "missing",
+        seed: saved?.seed,
+        count: saved?.colonists.length ?? 0,
       };
     });
     expect(mind.residence).toBe("founder");
     expect(mind.stated).toBe("objectivism");
     expect(mind.receptivity).toBeGreaterThan(0);
     expect(mind.goods).toBeGreaterThan(0);
+    expect(mind.food).toBeGreaterThan(0);
+    expect(mind.seed).toBe(0x6a1c);
+    expect(mind.count).toBeGreaterThanOrEqual(3);
+    expect(mind.count).toBeLessThanOrEqual(5);
     expect(mind.hasResearch).toBe(true);
     expect(mind.active).toBeNull();
 
@@ -108,8 +119,12 @@ for (const target of smokeTargets) {
 
     const used = await page.evaluate(() => window.__colonyUsed);
     expect(used, "the scene did not report which assets it used").toBeTruthy();
-    expect(used!.models.slice().sort()).toEqual([...manifest.models].sort());
-    expect(used!.textures.slice().sort()).toEqual([...manifest.textures].sort());
+    const manifestModels = new Set(manifest.models);
+    const manifestTextures = new Set(manifest.textures);
+    expect(used!.models.length).toBeGreaterThan(10);
+    expect(used!.textures.length).toBeGreaterThan(10);
+    expect(used!.models.every((model) => manifestModels.has(model))).toBe(true);
+    expect(used!.textures.every((texture) => manifestTextures.has(texture))).toBe(true);
     const packIndex = JSON.parse(
       fs.readFileSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../assets/isorim/packs/index.json"), "utf8"),
     ) as { packs: string[] };
@@ -122,8 +137,8 @@ for (const target of smokeTargets) {
     }
     for (const texture of manifest.textures) {
       const url = [...assetStatus.keys()].find((item) => item.endsWith(`/assets/isorim/${texture}`));
-      expect(url, texture).toBeTruthy();
-      expect(assetStatus.get(url!), texture).toBe(200);
+      if (!url) continue;
+      expect(assetStatus.get(url), texture).toBe(200);
     }
 
     expect(problems, problems.join("\n")).toEqual([]);
@@ -211,6 +226,21 @@ test("the loading screen stays up until every pack has loaded", async ({ page })
   expect(done?.revealed).toBe(true);
   await expect(page.locator("canvas")).toBeVisible();
   await expect(page.locator("#status")).toHaveText("Near walls fold away as you orbit.");
+  await expect(page.locator(".label", { hasText: "Nell" })).toBeVisible();
+});
+
+test("reroll builds the valley from the new seed", async ({ page }) => {
+  const target = smokeTargets.find((item) => item.name === "dev");
+  if (!target) throw new Error("missing dev target");
+  await page.goto(target.url, { waitUntil: "networkidle" });
+  await expect(page.locator("#seed-value")).toHaveText("6a1c");
+  await page.getByRole("button", { name: "Reroll" }).click();
+  const shown = (await page.locator("#seed-value").textContent()) ?? "";
+  expect(shown).not.toBe("6a1c");
+  await beginAndWaitForValley(page);
+  await expect(page.locator("#seed")).toHaveText(`Seed ${shown}`);
+  const seed = await page.evaluate(() => window.__gulch?.save().seed ?? 0);
+  expect(seed.toString(16).padStart(4, "0")).toBe(shown);
   await expect(page.locator(".label", { hasText: "Nell" })).toBeVisible();
 });
 

@@ -2,9 +2,19 @@
 
 Galt's Gulch is a colony simulation set in one hidden valley in Colorado. There is no world map and no second settlement. The player arrives, and the people already there live by their own judgment: voluntary trade, gold dollars, productive work, and reason. Force answers force. It is not a tool for improving someone's ideas.
 
-This document is the design of that simulation. The code in this repository is the slice underneath it: a fixed tick, an entity record, and five people walking. Beliefs, visitors, workshops, and research have places to live in that record. They do not run yet.
+This document is the design of that simulation. The code in this repository is the slice underneath it: a fixed tick, an entity record, and a seeded valley with a few founders walking. Beliefs, visitors, workshops, and research have places to live in that record. They do not run yet.
 
-The map geometry is the Hearthstead layout from `src/data/layout.json`. The game calls that ground the valley.
+## Valley generation
+
+`generateValley(seed)` in `src/game/generate.ts` builds the map. The same seed returns the same ground, the same deposits, and the same people. A fresh page uses `0x6a1c`. The title shows that seed and can reroll it. In the valley, New valley reloads on a new seed. Generation has its own mulberry32 stream. The simulation then starts its wander stream from the same seed. The two streams do not share a cursor.
+
+The map is a ring of cliffs. The outer cells are rough stone with rock walls. A gravel bench sits inside that. The basin holds meadows (`grass`, `grassRich`), soil plots, forest patches of pine, poplar, oak, and birch, and a creek that ends in a pond before it can cut the basin in two. Stone is a run of boulders on each bench. Ore is a streak of `rockOre` in the east cliff and the west cliff, each with a short jut into the gravel. None of that is a heightmap. The renderer draws flat cells and one-storey walls.
+
+The starting site is a plank cabin and a smaller store, each with a door and a roof, on a flagstone yard. The yard is the buildable clearing: open cells, connected to each other and to the rest of the walkable ground. A shelf and barrels mark the store. Food, timber, and stone start in the founders' own inventories, and gold starts in their purses. There is no common pile. The ore and the boulders stay on the map until someone mines them, which this build does not do.
+
+Three to five founders are placed on the yard. Nell is always one of them. Each has a name, a body, all eight skills, and a mind in the save shape: stated objectivism, no foreign seeds, residence `founder`, force `none`, and their own goods. The count, the other names, the skill levels, and the amounts move with the seed.
+
+`createValley(seed)` returns that colony, the spawns, and the clearing. The viewer passes the spawns and the seed into `createSimulation` and draws the colony. It does not roll the map. `src/data/layout.json` is the old hand-placed Hearthstead catalog from `tools/build_layout.py`. The game does not load it.
 
 ## Time
 
@@ -326,7 +336,7 @@ The interesting game is the shortage, not a tree of moral upgrades. Every plank 
 
 ## Rendering boundary
 
-`src/render/` reads `ColonistColumns` and the roster. It does not pathfind. `src/ui/` is the title screen and the corner frame. `src/game/` turns the layout into a valley name, founder spawns, and a nav grid. `src/engine/` does not import Three.js and does not import the layout.
+`src/render/` reads `ColonistColumns`, the roster, and the colony it was given. It does not pathfind and it does not generate the map. `src/ui/` is the title screen, the loading screen, and the corner frame. `src/game/` generates the valley from a seed and derives the nav grid. `src/engine/` does not import Three.js and does not import the layout. Founder skills, minds, needs, and purses are on the spawns the generator hands to `createSimulation`.
 
 Per frame the viewer:
 

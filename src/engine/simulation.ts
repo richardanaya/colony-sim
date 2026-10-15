@@ -47,20 +47,20 @@ export class TypeScriptSimulation implements Simulation {
     this.ids = spawns.map((spawn) => spawn.id);
     this.keys = spawns.map((spawn) => spawn.key);
     this.names = spawns.map((spawn) => spawn.name);
-    this.needs = spawns.map((_, index) => ({
+    this.needs = spawns.map((spawn, index) => spawn.needs ?? {
       food: clamp01(0.92 - index * 0.03),
       rest: clamp01(0.88 - index * 0.02),
       recreation: clamp01(0.9 - index * 0.04),
-    }));
-    this.skills = spawns.map((spawn) => skillsFor(spawn.id));
-    this.minds = spawns.map((_, index) => founderMind(index));
+    });
+    this.skills = spawns.map((spawn) => spawn.skills ?? skillsFor(spawn.id));
+    this.minds = spawns.map((spawn, index) => spawn.mind ?? founderMind(index));
     this.purseCents = new Int32Array(CAPACITY);
     this.contractId = spawns.map(() => null);
     this.activity = spawns.map(() => "wander" as const);
     this.wait = new Float32Array(CAPACITY);
     this.paths = spawns.map(() => []);
-    spawns.forEach((_, index) => {
-      this.purseCents[index] = 8_000 + index * 1_500;
+    spawns.forEach((spawn, index) => {
+      this.purseCents[index] = spawn.purseCents ?? 8_000 + index * 1_500;
       this.wait[index] = index * 0.35;
     });
 

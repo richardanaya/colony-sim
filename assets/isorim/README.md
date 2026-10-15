@@ -10,7 +10,7 @@ Wavefront OBJ, text. IsoRim generates them with Y up and writes **−Z as north*
 
 Materials whose names start with `stuff` are multiplied by the build colour (wood, stone, metal, or a person’s clothing). `twig*` pieces are the bare-winter branches and are left out while trees are in leaf.
 
-People are assembled from `person_*` parts. Animals are a body plus, when the species has one, a leg posed at each hip from IsoRim’s `Defs/Models.xml`. The cobra has no leg mesh. `door_leaf` and `door_lintel` are the doors. Everything else is placed as a prop on the Hearthstead map (`src/data/layout.json`).
+People are assembled from `person_*` parts. Animals are a body plus, when the species has one, a leg posed at each hip from IsoRim’s `Defs/Models.xml`. The cobra has no leg mesh. `door_leaf` and `door_lintel` are the doors. The seeded valley uses a subset of the other models as props. The old full-catalog placement lives in `src/data/layout.json` and is not what the page draws.
 
 ## Textures (`textures/**/*.png`)
 
