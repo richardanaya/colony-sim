@@ -8,10 +8,10 @@ if (!(root instanceof HTMLElement)) {
   throw new Error("Missing #app");
 }
 
-mountTitle(root, () => {
+mountTitle(root, (seed) => {
   const gate = mountLoading(root, () => {
     document.querySelector("#hud")?.classList.remove("is-concealed");
     document.querySelector("#labels")?.classList.remove("is-concealed");
   });
-  mount(root, gate);
+  mount(root, gate, seed);
 });

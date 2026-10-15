@@ -1,5 +1,8 @@
+import { DEFAULT_SEED, formatSeed } from "../game/generate";
+
 /** Title card. Begin mounts the valley underneath this screen. */
-export function mountTitle(root: HTMLElement, onBegin: () => void): void {
+export function mountTitle(root: HTMLElement, onBegin: (seed: number) => void): void {
+  let seed = readSeed();
   const screen = document.createElement("div");
   screen.id = "title-screen";
   screen.innerHTML = `
@@ -31,19 +34,33 @@ export function mountTitle(root: HTMLElement, onBegin: () => void): void {
         People came here to work, to trade, and to live by their own judgment.
         No one is forced to live for anyone else.
       </p>
+      <p class="seed-row">
+        <span id="seed-label">Seed <span id="seed-value"></span></span>
+        <button type="button" id="reroll">Reroll</button>
+      </p>
       <button type="button" id="begin">Begin</button>
     </div>
   `;
   root.append(screen);
   const begin = screen.querySelector("#begin");
-  if (!(begin instanceof HTMLButtonElement)) return;
+  const reroll = screen.querySelector("#reroll");
+  const seedValue = screen.querySelector("#seed-value");
+  if (!(begin instanceof HTMLButtonElement) || !(reroll instanceof HTMLButtonElement)) return;
+  const paintSeed = () => {
+    if (seedValue) seedValue.textContent = formatSeed(seed);
+  };
+  paintSeed();
+  reroll.addEventListener("click", () => {
+    seed = (seed + 1 + Math.floor(Math.random() * 0xffff)) >>> 0;
+    paintSeed();
+  });
   begin.focus();
 
   let closed = false;
   const close = () => {
     if (closed) return;
     closed = true;
-    onBegin();
+    onBegin(seed);
     screen.classList.add("is-leaving");
     const remove = () => {
       screen.remove();
@@ -52,4 +69,10 @@ export function mountTitle(root: HTMLElement, onBegin: () => void): void {
     window.setTimeout(remove, 700);
   };
   begin.addEventListener("click", close);
+}
+
+function readSeed(): number {
+  const raw = new URLSearchParams(window.location.search).get("seed");
+  if (raw && /^[0-9a-fA-F]{1,8}$/.test(raw)) return Number.parseInt(raw, 16) >>> 0;
+  return DEFAULT_SEED;
 }

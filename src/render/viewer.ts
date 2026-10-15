@@ -3,7 +3,8 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { createSimulation, type SaveGame, type Simulation } from "../engine";
 import type { ColonistSpawn } from "../engine/types";
 import type { Colony } from "../game/map";
-import { createValley, valleySpawns } from "../game/valley";
+import { formatSeed } from "../game/generate";
+import { createValley } from "../game/valley";
 import { walkability } from "../game/walkability";
 import { buildAnimal, swayAnimals, type PosedAnimal } from "./animals";
 import { buildFigure } from "./figures";
@@ -20,17 +21,26 @@ interface ColonistView {
   label: HTMLDivElement;
 }
 
-export function mount(root: HTMLElement, gate: LoadGate): void {
-  const colony = createValley();
+export function mount(root: HTMLElement, gate: LoadGate, seed: number): void {
+  const generated = createValley(seed);
+  const colony = generated.colony;
   const hud = document.createElement("div");
   hud.id = "hud";
   hud.className = "is-concealed";
   hud.innerHTML = `
     <h1>${colony.name}</h1>
     <p class="place">A hidden valley in Colorado</p>
+    <p id="seed">Seed ${formatSeed(seed)}</p>
     <p class="hint">Drag to pan · scroll to zoom · right-drag to orbit</p>
     <p id="status">Loading IsoRim models…</p>
+    <button type="button" id="new-valley">New valley</button>
   `;
+  hud.querySelector("#new-valley")?.addEventListener("click", () => {
+    const next = (Math.floor(Math.random() * 0xffffffff) >>> 0) || 1;
+    const params = new URLSearchParams(window.location.search);
+    params.set("seed", formatSeed(next));
+    window.location.search = params.toString();
+  });
   const labels = document.createElement("div");
   labels.id = "labels";
   labels.className = "is-concealed";
@@ -38,7 +48,7 @@ export function mount(root: HTMLElement, gate: LoadGate): void {
   const status = hud.querySelector("#status");
   if (!(status instanceof HTMLElement)) return;
 
-  void boot(root, colony, labels, status, gate).catch((error: unknown) => {
+  void boot(root, colony, generated.spawns, labels, status, gate, seed).catch((error: unknown) => {
     const message = error instanceof Error ? error.message : "The valley failed to load.";
     status.textContent = message;
     gate.fail(message);
@@ -49,9 +59,11 @@ export function mount(root: HTMLElement, gate: LoadGate): void {
 async function boot(
   root: HTMLElement,
   colony: Colony,
+  spawns: ColonistSpawn[],
   labels: HTMLElement,
   status: HTMLElement,
   gate: LoadGate,
+  seed: number,
 ): Promise<void> {
   const models = await loadModels(modelNames(colony));
   gate.markPacks();
@@ -169,8 +181,7 @@ async function boot(
     scene.add(buildFigure(figure, models, materials));
   }
 
-  const spawns: ColonistSpawn[] = valleySpawns(colony);
-  const sim = createSimulation({ spawns, nav: walkability(colony) });
+  const sim = createSimulation({ spawns, nav: walkability(colony), seed });
   const roster = sim.roster();
   const views: ColonistView[] = roster.keys.map((key, index) => {
     const figure = figures.get(key);

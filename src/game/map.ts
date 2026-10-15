@@ -129,8 +129,8 @@ export interface Mark {
 
 /**
  * Static map the viewer draws. The simulation does not live in this object.
- * `tools/build_layout.py` still writes the Hearthstead layout; the game
- * presents that geometry as the Colorado valley.
+ * `generateValley` builds one of these from a seed. `tools/build_layout.py`
+ * can still write the old full-catalog Hearthstead layout; the game does not load it.
  */
 export interface Colony {
   name: string;

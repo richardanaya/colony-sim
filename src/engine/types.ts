@@ -173,6 +173,11 @@ export interface ColonistSpawn {
   x: number;
   z: number;
   yaw: number;
+  /** Present when the valley generator rolled this person. Otherwise the backend fills a founder. */
+  skills?: Skills;
+  mind?: Mind;
+  needs?: Needs;
+  purseCents?: number;
 }
 
 /**
