@@ -250,7 +250,7 @@ test("selecting a colonist and choosing Move walks them toward the cell", async 
   if (!target) throw new Error("missing dev target");
   await page.goto(target.url, { waitUntil: "networkidle" });
   await beginAndWaitForValley(page);
-  await page.locator(".label", { hasText: "Nell" }).click();
+  await selectColonist(page, "Nell");
   await expect(page.locator("#action-bar")).toBeVisible();
   await expect(page.locator("#action-name")).toHaveText("Nell");
   await page.getByRole("button", { name: "Move" }).click();
@@ -298,7 +298,7 @@ test("picking up an object and placing it leaves the object on the new cell", as
   if (!target) throw new Error("missing dev target");
   await page.goto(target.url, { waitUntil: "networkidle" });
   await beginAndWaitForValley(page);
-  await page.locator(".label", { hasText: "Nell" }).click();
+  await selectColonist(page, "Nell");
   await page.getByRole("button", { name: "Pick up" }).click();
   const item = await page.evaluate(() => {
     const gulch = window.__gulch;
@@ -345,6 +345,29 @@ test("picking up an object and placing it leaves the object on the new cell", as
   }, { id: item!.id, x: dest!.x, z: dest!.z })).toBe(true);
   expect(problems, problems.join("\n")).toEqual([]);
 });
+
+/**
+ * Click the person on the map. The name tag moves every frame while they walk,
+ * so a label hit-test never settles; the canvas click does not wait on it.
+ */
+async function selectColonist(page: Page, name: string): Promise<void> {
+  const point = await page.evaluate((colonist) => {
+    const gulch = window.__gulch;
+    const person = gulch?.save().colonists.find((entry) => entry.name === colonist);
+    const canvas = document.querySelector("canvas");
+    if (!gulch || !person || !(canvas instanceof HTMLCanvasElement)) return null;
+    const projected = gulch.project(person.x, 0.9, person.z);
+    const rect = canvas.getBoundingClientRect();
+    const cx = projected.x - rect.left;
+    const cy = projected.y - rect.top;
+    if (cx < 8 || cy < 8 || cx > rect.width - 8 || cy > rect.height - 8) return null;
+    return { cx, cy };
+  }, name);
+  if (point) await page.locator("canvas").click({ position: { x: point.cx, y: point.cy } });
+  if (await page.locator("#action-name").textContent() !== name) {
+    await page.locator(".label", { hasText: name }).dispatchEvent("click");
+  }
+}
 
 function watchConsole(page: Page): string[] {
   const problems: string[] = [];
