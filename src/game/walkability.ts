@@ -2,7 +2,7 @@ import type { NavGrid } from "../engine/types";
 import type { Colony, Prop } from "./map";
 
 /** Cells a colonist cannot enter, derived from the map alone. */
-export function walkability(colony: Colony): NavGrid {
+export function walkability(colony: Colony, options?: { skipMovable?: boolean }): NavGrid {
   const blocked = new Uint8Array(colony.width * colony.height);
   const mark = (x: number, z: number) => {
     if (x < 0 || z < 0 || x >= colony.width || z >= colony.height) return;
@@ -18,6 +18,7 @@ export function walkability(colony: Colony): NavGrid {
   for (const wall of colony.walls) mark(wall.x, wall.z);
   for (const prop of colony.props) {
     if (prop.blocks === false) continue;
+    if (options?.skipMovable && prop.movable) continue;
     for (const [x, z] of footprint(prop)) mark(x, z);
   }
   for (const animal of colony.animals) {

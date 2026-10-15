@@ -40,10 +40,11 @@ GitHub Pages serves this repository root as https://richardanaya.github.io/galts
 - Drag to pan
 - Scroll to zoom
 - Right-drag to orbit
+- Click a colonist, then Move, Pick up, or Place
 
 ## Data
 
-The valley is generated from a seed in `src/game/generate.ts`: cliffs, a creek, meadows, soil, forest, ore, stone, a cabin, a store, and three to five founders. The title shows the seed and can reroll it. Coordinates are in cells, +X east and +Z north. `src/data/manifest.json` lists the IsoRim models and textures the packs can serve. `tools/build_layout.py` can still write the old full-catalog Hearthstead layout to `src/data/layout.json`. The game does not load that file.
+The valley is generated from a seed in `src/game/generate.ts` on a 180 by 132 map: cliffs, a long creek, meadows, soil, forest, ore, stone, a cabin, a store, and three to five founders. The title shows the seed and can reroll it. Coordinates are in cells, +X east and +Z north. `src/data/manifest.json` lists the IsoRim models and textures the packs can serve. `tools/build_layout.py` can still write the old full-catalog Hearthstead layout to `src/data/layout.json`. The game does not load that file.
 
 ## Assets
 
@@ -51,7 +52,7 @@ IsoRim models are Wavefront `.obj` (one unit = one cell). The viewer does not re
 
 ## Limitations
 
-- The valley is a fixed map plus a tick that walks five people. Needs, contracts, beliefs, inventories, and research are stored. They do not yet change play. See `docs/ENGINE.md` for the systems that are designed and not built.
+- People can be told to walk and to carry furniture. Needs, contracts, beliefs, inventories, and research are stored. They do not yet change play. See `docs/ENGINE.md` for the systems that are designed and not built.
 - The other people are mannequins in the barracks, one outfit each, so every body and armour mesh is on screen without stacking plates on a single figure.
 - People are IsoRim’s simple body parts (head, torso, hair, a coat or one suit of armour). They have no arms, and walking is a grid path plus a small bob.
 - Animals stand in their pens. Legs hang from the hips in IsoRim’s bind pose and sway a little; they do not walk.

@@ -44,8 +44,9 @@ export type JobKind = (typeof JOB_KINDS)[number];
 /**
  * What a colonist is doing. `wander` is the idle of a free person.
  * `work` is set only after they have accepted a contract.
+ * `haul` is a player order: walk, pick up, or set something down.
  */
-export type Activity = "wander" | "work";
+export type Activity = "wander" | "work" | "haul";
 
 export type ContractState = "offered" | "accepted" | "refused" | "fulfilled" | "withdrawn";
 
@@ -268,6 +269,35 @@ export interface Simulation {
   pollEvents(): SimEvent[];
   save(): SaveGame;
   load(save: SaveGame): void;
+  /** Walk `colonistId` to a cell. The renderer does not move them. */
+  orderMove(colonistId: number, x: number, z: number): boolean;
+  /** Walk to a movable object and carry it. */
+  orderPickup(colonistId: number, itemId: string): boolean;
+  /** Walk to a cell and set down the object this colonist is carrying. */
+  orderPlace(colonistId: number, x: number, z: number): boolean;
+  items(): readonly HaulItemState[];
+  blocked(x: number, z: number): boolean;
+}
+
+/** A map object the player can tell someone to carry. Walls and trees are not these. */
+export interface HaulItemSpawn {
+  id: string;
+  x: number;
+  z: number;
+  w: number;
+  d: number;
+  blocks: boolean;
+}
+
+export interface HaulItemState {
+  id: string;
+  x: number;
+  z: number;
+  w: number;
+  d: number;
+  blocks: boolean;
+  /** Colonist id, or 0 while the object sits on the ground. */
+  carrierId: number;
 }
 
 export interface CreateSimulationOptions {
@@ -276,4 +306,6 @@ export interface CreateSimulationOptions {
   /** Defaults to a fixed seed so a tick sequence can be replayed. */
   seed?: number;
   backend?: SimulationBackendName;
+  /** Movable objects. The nav grid should not already mark their cells. */
+  items?: readonly HaulItemSpawn[];
 }

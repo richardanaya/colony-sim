@@ -5,10 +5,13 @@ import type { Colony, Door, Figure, Prop, Roof, TerrainKind, Wall, WallKind } fr
 /** Same default the wander tick uses, so a fresh page is one seed end to end. */
 export const DEFAULT_SEED = 0x6a1c;
 
-export const VALLEY_WIDTH = 64;
-export const VALLEY_HEIGHT = 56;
+export const VALLEY_WIDTH = 180;
+export const VALLEY_HEIGHT = 132;
 
-const RIM = 5;
+/** Earlier compact valley, kept so tests can require several times that area. */
+export const COMPACT_VALLEY_AREA = 64 * 56;
+
+const RIM = 8;
 const CAMP_W = 18;
 const CAMP_H = 14;
 
@@ -67,8 +70,8 @@ export function generateValley(seed: number): GeneratedValley {
   grid.paintRim();
 
   const camp = {
-    x: 8 + Math.floor(rng() * 12),
-    z: VALLEY_HEIGHT - RIM - CAMP_H - Math.floor(rng() * 3),
+    x: Math.floor(VALLEY_WIDTH * 0.4) + Math.floor(rng() * 20),
+    z: VALLEY_HEIGHT - RIM - CAMP_H - 6 - Math.floor(rng() * 4),
     w: CAMP_W,
     h: CAMP_H,
   };
@@ -225,7 +228,7 @@ class Grid {
         if (dist <= 2) {
           this.terrain[z * VALLEY_WIDTH + x] = "roughStone";
           this.addWall(x, z, "rock");
-        } else if (dist <= 4) {
+        } else if (dist < RIM) {
           this.terrain[z * VALLEY_WIDTH + x] = "gravel";
         }
       }
@@ -268,17 +271,17 @@ class Grid {
   }
 
   meadows(rng: () => number, camp: Cell & { w: number; h: number }): void {
-    for (let n = 0; n < 3; n++) {
-      const cx = RIM + 6 + Math.floor(rng() * (VALLEY_WIDTH - RIM * 2 - 12));
-      const cz = RIM + 6 + Math.floor(rng() * (VALLEY_HEIGHT - RIM * 2 - 18));
-      const radius = 5 + Math.floor(rng() * 4);
+    for (let n = 0; n < 8; n++) {
+      const cx = RIM + 8 + Math.floor(rng() * (VALLEY_WIDTH - RIM * 2 - 16));
+      const cz = RIM + 8 + Math.floor(rng() * (VALLEY_HEIGHT - RIM * 2 - 16));
+      const radius = 8 + Math.floor(rng() * 8);
       this.disk(cx, cz, radius, camp);
     }
   }
 
   soil(rng: () => number, camp: Cell & { w: number; h: number }): void {
     this.fillRect(camp.x + 1, camp.z - 5, 8, 4, "soilRich", true);
-    for (let n = 0; n < 2; n++) {
+    for (let n = 0; n < 5; n++) {
       const x = RIM + 2 + Math.floor(rng() * (VALLEY_WIDTH - RIM * 2 - 10));
       const z = RIM + 2 + Math.floor(rng() * (Math.max(1, camp.z - RIM - 8)));
       this.fillRect(x, z, 6, 4, n === 0 ? "soil" : "soilRich", true);
@@ -286,10 +289,10 @@ class Grid {
   }
 
   forests(rng: () => number, camp: Cell & { w: number; h: number }): void {
-    for (let n = 0; n < 4; n++) {
+    for (let n = 0; n < 16; n++) {
       const cx = RIM + 4 + Math.floor(rng() * (VALLEY_WIDTH - RIM * 2 - 8));
       const cz = RIM + 4 + Math.floor(rng() * (Math.max(1, camp.z - RIM - 6)));
-      const radius = 4 + Math.floor(rng() * 3);
+      const radius = 6 + Math.floor(rng() * 5);
       let placed = 0;
       for (let z = cz - radius; z <= cz + radius; z += 3) {
         for (let x = cx - radius; x <= cx + radius; x += 3) {
@@ -303,35 +306,36 @@ class Grid {
   }
 
   stone(rng: () => number): void {
-    for (const side of [4, VALLEY_WIDTH - 5]) {
-      let z = 10 + Math.floor(rng() * 16);
-      for (let n = 0; n < 4; n++) {
-        const model = BOULDERS[Math.floor(rng() * BOULDERS.length)];
-        this.tryProp({
-          model,
-          x: side,
-          z,
-          w: 1,
-          d: 1,
-          stuff: "Stone",
-          blocks: true,
-        });
-        z += 2;
+    for (const side of [5, VALLEY_WIDTH - 6]) {
+      for (let z = 16; z < VALLEY_HEIGHT - 18; z += 18) {
+        const jitter = Math.floor(rng() * 4);
+        for (let n = 0; n < 3; n++) {
+          const model = BOULDERS[Math.floor(rng() * BOULDERS.length)];
+          this.tryProp({
+            model,
+            x: side,
+            z: z + jitter + n * 2,
+            w: 1,
+            d: 1,
+            stuff: "Stone",
+            blocks: true,
+          });
+        }
       }
     }
   }
 
   ore(rng: () => number): void {
     for (const x of [2, VALLEY_WIDTH - 3]) {
-      const z0 = 12 + Math.floor(rng() * 18);
-      for (let dz = 0; dz < 4; dz++) {
-        this.rekind(x, z0 + dz, "rockOre");
+      for (let n = 0; n < 4; n++) {
+        const z0 = 18 + Math.floor(rng() * (VALLEY_HEIGHT - 46));
+        for (let dz = 0; dz < 5; dz++) this.rekind(x, z0 + dz, "rockOre");
+        const jut = x === 2 ? 5 : VALLEY_WIDTH - 6;
+        this.addWall(jut, z0 + 1, "rockOre");
+        this.addWall(jut, z0 + 2, "rockOre");
+        this.setTerrain(jut, z0 + 1, "roughStone");
+        this.setTerrain(jut, z0 + 2, "roughStone");
       }
-      const jut = x === 2 ? 4 : VALLEY_WIDTH - 5;
-      this.addWall(jut, z0 + 1, "rockOre");
-      this.addWall(jut, z0 + 2, "rockOre");
-      this.setTerrain(jut, z0 + 1, "roughStone");
-      this.setTerrain(jut, z0 + 2, "roughStone");
     }
   }
 
@@ -340,12 +344,12 @@ class Grid {
     const shed = { x: camp.x + 10, z: camp.z + 1, w: 5, d: 4 };
     this.building(cabin, "thatch", "cabin");
     this.building(shed, "slate", "shed");
-    this.tryProp({ model: "bedroll", x: cabin.x + 1, z: cabin.z + 4, w: 1, d: 1, stuff: "Fabric", blocks: true });
-    this.tryProp({ model: "table_1x2", x: cabin.x + 4, z: cabin.z + 2, w: 1, d: 2, stuff: "Wood", blocks: true });
-    this.tryProp({ model: "dining_chair", x: cabin.x + 5, z: cabin.z + 2, w: 1, d: 1, stuff: "Wood", blocks: true });
-    this.tryProp({ model: "shelf", x: shed.x + 1, z: shed.z + 2, w: 1, d: 1, stuff: "Wood", blocks: true });
-    this.tryProp({ model: "barrel", x: shed.x + 3, z: shed.z + 2, w: 1, d: 1, stuff: "Wood", blocks: true });
-    this.tryProp({ model: "barrel", x: shed.x + 3, z: shed.z + 1, w: 1, d: 1, stuff: "Wood", blocks: true });
+    this.tryProp({ model: "bedroll", x: cabin.x + 1, z: cabin.z + 4, w: 1, d: 1, stuff: "Fabric", blocks: true, movable: true });
+    this.tryProp({ model: "table_1x2", x: cabin.x + 4, z: cabin.z + 2, w: 1, d: 2, stuff: "Wood", blocks: true, movable: true });
+    this.tryProp({ model: "dining_chair", x: cabin.x + 5, z: cabin.z + 2, w: 1, d: 1, stuff: "Wood", blocks: true, movable: true });
+    this.tryProp({ model: "shelf", x: shed.x + 1, z: shed.z + 2, w: 1, d: 1, stuff: "Wood", blocks: true, movable: true });
+    this.tryProp({ model: "barrel", x: shed.x + 3, z: shed.z + 2, w: 1, d: 1, stuff: "Wood", blocks: true, movable: true });
+    this.tryProp({ model: "barrel", x: shed.x + 3, z: shed.z + 1, w: 1, d: 1, stuff: "Wood", blocks: true, movable: true });
     for (let z = camp.z + 7; z < camp.z + camp.h; z++) {
       for (let x = camp.x; x < camp.x + camp.w; x++) {
         if (this.wallAt.has(key(x, z))) continue;
@@ -360,6 +364,7 @@ class Grid {
       w: 1,
       d: 1,
       blocks: false,
+      movable: true,
     });
     return { doorX: cabin.x + 3, doorZ: cabin.z };
   }

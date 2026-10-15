@@ -94,6 +94,62 @@ canvas {
   font-size: 12px;
   letter-spacing: 0.02em;
   white-space: nowrap;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.label.is-selected {
+  outline: 1px solid #e4c98a;
+  color: #f6e7c8;
+}
+
+#action-bar {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  z-index: 3;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(28, 26, 22, 0.82);
+  border-radius: 8px;
+  transform: translateX(-50%);
+  pointer-events: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+#action-bar.is-open {
+  display: flex;
+}
+
+#action-name {
+  margin-right: 4px;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: #f6e7c8;
+}
+
+#action-bar button {
+  padding: 5px 12px;
+  border: 1px solid rgba(228, 201, 138, 0.7);
+  border-radius: 999px;
+  background: transparent;
+  color: #f6e7c8;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+#action-bar button.is-armed {
+  background: rgba(228, 201, 138, 0.28);
+}
+
+#action-bar button:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 #title-screen {

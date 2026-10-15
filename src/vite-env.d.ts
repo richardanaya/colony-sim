@@ -9,6 +9,9 @@ interface GulchDebug {
   readonly tick: number;
   save(): import("./engine/types").SaveGame;
   load(save: import("./engine/types").SaveGame): void;
+  project(x: number, y: number, z: number): { x: number; y: number };
+  items(): import("./engine/types").HaulItemState[];
+  blocked(x: number, z: number): boolean;
 }
 
 interface Window {

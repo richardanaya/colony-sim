@@ -86,6 +86,8 @@ export interface Prop {
   tint?: string;
   /** When false, colonists may walk this footprint. Defaults to true. */
   blocks?: boolean;
+  /** Furniture and small goods. Walls, cliffs, trees, and boulders stay put. */
+  movable?: boolean;
   /** Material-name prefixes to leave out (bare-winter twigs, for example). */
   skipPrefix?: string[];
 }
