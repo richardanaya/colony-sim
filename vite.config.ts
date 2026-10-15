@@ -115,6 +115,8 @@ function contentType(file: string): string {
       return "text/css; charset=utf-8";
     case ".json":
       return "application/json; charset=utf-8";
+    case ".gz":
+      return "application/gzip";
     default:
       return "application/octet-stream";
   }

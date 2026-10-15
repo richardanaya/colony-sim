@@ -47,7 +47,7 @@ GitHub Pages serves this repository root as https://richardanaya.github.io/galts
 
 ## Assets
 
-IsoRim models are Wavefront `.obj` (one unit = one cell). Textures are PNG. See `assets/isorim/README.md` and `THIRD_PARTY_NOTICES.md`.
+IsoRim models are Wavefront `.obj` (one unit = one cell). The viewer does not request them one by one. `npm run pack` writes a few gzip JSON packs under `assets/isorim/packs/`, and the page loads those. Textures stay individual PNGs, fetched a handful at a time, with retries. A single asset that still fails is skipped. See `assets/isorim/README.md` and `THIRD_PARTY_NOTICES.md`.
 
 ## Limitations
 

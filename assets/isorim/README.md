@@ -6,7 +6,7 @@ This folder is the world art the colony draws: every model from IsoRim’s `Mode
 
 ## Models (`models/*.obj`)
 
-Wavefront OBJ, text. IsoRim generates them with Y up and writes **−Z as north**. This viewer flips Z on load so +Z is north and one unit is one map cell. There is no `.mtl` beside the models in `Models.7z`; colours and texture names live in `src/data/materials.json`, taken from IsoRim’s `tools/make_models.py`.
+Wavefront OBJ, text. IsoRim generates them with Y up and writes **−Z as north**. This viewer flips Z on load so +Z is north and one unit is one map cell. The page does not fetch these files individually. `npm run pack` gathers them into `packs/*.json.gz`, and that is what the valley loads. There is no `.mtl` beside the models in `Models.7z`; colours and texture names live in `src/data/materials.json`, taken from IsoRim’s `tools/make_models.py`.
 
 Materials whose names start with `stuff` are multiplied by the build colour (wood, stone, metal, or a person’s clothing). `twig*` pieces are the bare-winter branches and are left out while trees are in leaf.
 

@@ -1,4 +1,4 @@
-/** Title card. The valley scene mounts underneath and stays covered until Begin. */
+/** Title card. Begin mounts the valley underneath this screen. */
 export function mountTitle(root: HTMLElement, onBegin: () => void): void {
   const screen = document.createElement("div");
   screen.id = "title-screen";
@@ -26,12 +26,10 @@ export function mountTitle(root: HTMLElement, onBegin: () => void): void {
     <div class="title-copy">
       <p class="eyebrow">A hidden valley in Colorado</p>
       <h1>Galt's Gulch</h1>
-      <p class="tagline">I swear by my life and my love of it.</p>
-      <p class="oath">Nor ask another to live for mine.</p>
+      <p class="tagline">I swear by my life and my love of it that I will never live for the sake of another man, nor ask another man to live for mine.</p>
       <p class="lede">
-        The road ends at a cleft in the rock. Past it is a valley the maps do not
-        name: workshops, fields, and people who came here to live by their own
-        judgment. Trade is voluntary. Nothing here is taken to be given away.
+        People came here to work, to trade, and to live by their own judgment.
+        No one is forced to live for anyone else.
       </p>
       <button type="button" id="begin">Begin</button>
     </div>

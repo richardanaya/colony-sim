@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { ISORIM } from "../assets/paths";
 import { createSimulation, type SaveGame, type Simulation } from "../engine";
 import type { ColonistSpawn } from "../engine/types";
 import type { Colony } from "../game/map";
@@ -8,20 +7,20 @@ import { createValley, valleySpawns } from "../game/valley";
 import { walkability } from "../game/walkability";
 import { buildAnimal, swayAnimals, type PosedAnimal } from "./animals";
 import { buildFigure } from "./figures";
-import { MaterialLibrary, usedTexturesList } from "./materials";
-import { instantiate, parseObj, type LoadedModel } from "./obj";
+import { MaterialLibrary, texturesSettled, usedTexturesList } from "./materials";
+import { loadModels } from "./models";
+import { instantiate } from "./obj";
 import { buildStructures, cameraFaces, type CutawayPiece } from "./structures";
 import { sampleColonist, type SampledColonist } from "./sync";
 import { buildTerrain } from "./terrain";
-
-const MODEL_URL = `${ISORIM}/models`;
+import type { LoadGate } from "../ui/loading";
 
 interface ColonistView {
   group: THREE.Group;
   label: HTMLDivElement;
 }
 
-export function mount(root: HTMLElement): void {
+export function mount(root: HTMLElement, gate: LoadGate): void {
   const colony = createValley();
   const hud = document.createElement("div");
   hud.id = "hud";
@@ -39,8 +38,10 @@ export function mount(root: HTMLElement): void {
   const status = hud.querySelector("#status");
   if (!(status instanceof HTMLElement)) return;
 
-  void boot(root, colony, labels, status).catch((error: unknown) => {
-    status.textContent = error instanceof Error ? error.message : "The valley failed to load.";
+  void boot(root, colony, labels, status, gate).catch((error: unknown) => {
+    const message = error instanceof Error ? error.message : "The valley failed to load.";
+    status.textContent = message;
+    gate.fail(message);
     console.error(error);
   });
 }
@@ -50,8 +51,10 @@ async function boot(
   colony: Colony,
   labels: HTMLElement,
   status: HTMLElement,
+  gate: LoadGate,
 ): Promise<void> {
   const models = await loadModels(modelNames(colony));
+  gate.markPacks();
   const materials = new MaterialLibrary();
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -138,10 +141,7 @@ async function boot(
 
   for (const prop of colony.props) {
     const loaded = models.get(prop.model);
-    if (!loaded) {
-      console.warn(`Missing model ${prop.model}`);
-      continue;
-    }
+    if (!loaded) continue;
     const group = instantiate(loaded, {
       materials,
       stuff: prop.stuff,
@@ -216,6 +216,9 @@ async function boot(
   resize();
   window.addEventListener("resize", resize);
 
+  await texturesSettled();
+  gate.markWorld();
+
   const clock = new THREE.Clock();
   const labelAnchor = new THREE.Vector3();
   const sampled: SampledColonist[] = views.map(() => ({ x: 0, z: 0, yaw: 0, bob: 0 }));
@@ -244,6 +247,7 @@ async function boot(
     }
     placeLabels(views, sampled, camera, labelAnchor, renderer.domElement);
     renderer.render(scene, camera);
+    gate.markFrame();
     requestAnimationFrame(frame);
   };
   frame();
@@ -281,17 +285,6 @@ function placeLabels(
     label.style.left = `${(anchor.x * 0.5 + 0.5) * width}px`;
     label.style.top = `${(-anchor.y * 0.5 + 0.5) * height}px`;
   }
-}
-
-async function loadModels(names: string[]): Promise<Map<string, LoadedModel>> {
-  const pairs = await Promise.all(
-    names.map(async (name) => {
-      const response = await fetch(`${MODEL_URL}/${name}.obj`);
-      if (!response.ok) throw new Error(`Could not load ${name}.obj (${response.status})`);
-      return [name, parseObj(await response.text())] as const;
-    }),
-  );
-  return new Map(pairs);
 }
 
 function modelNames(colony: Colony): string[] {

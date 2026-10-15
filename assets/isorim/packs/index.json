@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "packs": [
+    "models-0.json.gz",
+    "models-1.json.gz",
+    "models-2.json.gz",
+    "models-3.json.gz"
+  ]
+}

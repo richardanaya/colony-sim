@@ -134,19 +134,13 @@ canvas {
   line-height: 0.92;
 }
 
-.title-copy .tagline,
-.title-copy .oath {
-  margin: 0.85rem auto 0;
-  max-width: 28rem;
-  font-size: clamp(1.15rem, 2.4vw, 1.45rem);
+.title-copy .tagline {
+  margin: 0.9rem auto 0;
+  max-width: 36rem;
+  font-size: clamp(1.05rem, 2.1vw, 1.28rem);
   font-style: italic;
-  line-height: 1.35;
+  line-height: 1.45;
   color: #f3e6cf;
-}
-
-.title-copy .oath {
-  margin-top: 0.15rem;
-  color: #e4c98a;
 }
 
 .title-copy .lede {
@@ -156,6 +150,34 @@ canvas {
   font-size: 0.98rem;
   line-height: 1.55;
   color: #efe6d8;
+}
+
+#load-progress {
+  width: min(22rem, 100%);
+  margin: 1.15rem auto 0;
+}
+
+.load-bar {
+  height: 3px;
+  background: rgba(244, 234, 216, 0.18);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.load-bar-fill {
+  width: 0%;
+  height: 100%;
+  background: #e4c98a;
+  border-radius: inherit;
+}
+
+.load-label {
+  margin: 0.45rem 0 0;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #e6d7bc;
 }
 
 #begin {
@@ -178,8 +200,87 @@ canvas {
   outline: none;
 }
 
+#loading-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: #f6efe2;
+  background: #100e0c;
+  transition: opacity 0.7s ease;
+}
+
+#loading-screen.is-leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-cleft {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 46%, rgba(196, 122, 62, 0.34), transparent 46%),
+    linear-gradient(180deg, #1a120e 0%, #2a2118 42%, #14110e 100%);
+}
+
+.loading-cleft::before,
+.loading-cleft::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 34%;
+  background: #0c0a09;
+}
+
+.loading-cleft::before {
+  left: 0;
+  clip-path: polygon(0 0, 100% 8%, 46% 100%, 0 100%);
+}
+
+.loading-cleft::after {
+  right: 0;
+  clip-path: polygon(54% 8%, 100% 0, 100% 100%, 0 100%);
+}
+
+.loading-copy {
+  position: relative;
+  width: min(36rem, calc(100% - 2.5rem));
+  text-align: center;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.45);
+}
+
+.loading-copy .eyebrow {
+  margin: 0 0 0.4rem;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #e4c98a;
+}
+
+.loading-copy h1 {
+  margin: 0;
+  font-size: clamp(2.2rem, 6vw, 3.6rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.loading-lede {
+  margin: 0.9rem auto 0;
+  max-width: 28rem;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 0.98rem;
+  line-height: 1.5;
+  color: #efe6d8;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  #title-screen {
+  #title-screen,
+  #loading-screen {
     transition: none;
   }
 }
