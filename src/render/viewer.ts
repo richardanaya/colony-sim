@@ -35,6 +35,7 @@ export function mount(root: HTMLElement, gate: LoadGate, seed: number): void {
     <p class="place">A hidden valley in Colorado</p>
     <p id="seed">Seed ${formatSeed(seed)}</p>
     <p class="hint">Drag to pan · scroll to zoom · right-drag to orbit</p>
+    <p class="credit"><a href="https://github.com/kndzio/IsoRim" target="_blank" rel="noreferrer">Assets: IsoRim by kndzio (MIT)</a></p>
     <p id="status">Loading IsoRim models…</p>
     <button type="button" id="new-valley">New valley</button>
   `;
@@ -84,7 +85,7 @@ async function boot(
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xc5d0b4);
   const span = Math.max(colony.width, colony.height);
-  scene.fog = new THREE.Fog(0xc5d0b4, 90, span * 1.35);
+  scene.fog = new THREE.Fog(0xc5d0b4, 110, span * 1.55);
 
   const hx = spawns.reduce((sum, spawn) => sum + spawn.x, 0) / Math.max(1, spawns.length);
   const hz = spawns.reduce((sum, spawn) => sum + spawn.z, 0) / Math.max(1, spawns.length);

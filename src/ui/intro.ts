@@ -39,6 +39,7 @@ export function mountTitle(root: HTMLElement, onBegin: (seed: number) => void): 
         <button type="button" id="reroll">Reroll</button>
       </p>
       <button type="button" id="begin">Begin</button>
+      <p class="title-credit"><a href="https://github.com/kndzio/IsoRim" target="_blank" rel="noreferrer">Assets: IsoRim by kndzio (MIT)</a></p>
     </div>
   `;
   root.append(screen);

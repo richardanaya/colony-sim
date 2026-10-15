@@ -1,10 +1,11 @@
 import * as THREE from "three";
 import { ISORIM } from "../assets/paths";
-import type { Colony, TerrainKind } from "../game/map";
+import { TIER_HEIGHT, type Colony, type TerrainKind } from "../game/map";
 import { geometryFrom, pushQuad } from "./geometry";
 import { loadTexture } from "./materials";
 
 const ASSET = `${ISORIM}/textures`;
+const SIDE_TEX_H = 1.25;
 
 interface TerrainStyle {
   file: string;
@@ -54,15 +55,22 @@ export function buildTerrain(colony: Colony): TerrainResult {
   const buckets = new Map<Exclude<TerrainKind, "water" | "stream">, { pos: number[]; nrm: number[]; uv: number[] }>();
   const pond = empty();
   const stream = empty();
+  const rockFaces = empty();
+  const oreFaces = empty();
+  const oreCells = new Set(colony.walls.filter((wall) => wall.kind === "rockOre").map((wall) => `${wall.x},${wall.z}`));
+  let peaked = false;
 
   for (let z = 0; z < colony.height; z++) {
     for (let x = 0; x < colony.width; x++) {
-      const kind = colony.terrain[z * colony.width + x];
+      const index = z * colony.width + x;
+      const kind = colony.terrain[index];
+      const elev = colony.elevation[index] ?? 0;
+      if (elev > 0) peaked = true;
       if (kind === "water" || kind === "stream") {
         water.add(`${x},${z}`);
         const dest = kind === "water" ? pond : stream;
         const u = kind === "water" ? 0.35 : 0.5;
-        const y = kind === "water" ? 0.035 : 0.03;
+        const y = elev * TIER_HEIGHT + (kind === "water" ? 0.035 : 0.03);
         pushQuad(dest.pos, dest.nrm, dest.uv, quad(x, y, z), uv(x, z, u));
         continue;
       }
@@ -72,8 +80,10 @@ export function buildTerrain(colony: Colony): TerrainResult {
         buckets.set(kind, bucket);
       }
       const style = STYLES[kind];
-      const y = style.raised ? 0.02 : 0.005;
+      const y = elev * TIER_HEIGHT + (style.raised ? 0.02 : 0.005);
       pushQuad(bucket.pos, bucket.nrm, bucket.uv, quad(x, y, z), uv(x, z, style.repeat));
+      const faces = oreCells.has(`${x},${z}`) ? oreFaces : rockFaces;
+      writeCliffFaces(colony, x, z, elev, y, faces);
     }
   }
 
@@ -89,18 +99,23 @@ export function buildTerrain(colony: Colony): TerrainResult {
     group.add(mesh);
   }
 
-  const pad = 3;
-  const strata = loadTexture(`${ASSET}/edge/Strata.png`, true);
-  strata.repeat.set((colony.width + pad * 2) / 8, (colony.height + pad * 2) / 8);
-  const skirt = new THREE.Mesh(
-    new THREE.PlaneGeometry(colony.width + pad * 2, colony.height + pad * 2),
-    new THREE.MeshLambertMaterial({ color: 0xc4b49a, map: strata }),
-  );
-  skirt.rotation.x = -Math.PI / 2;
-  skirt.position.set(colony.width / 2, -0.04, colony.height / 2);
-  skirt.receiveShadow = true;
-  skirt.name = "strata";
-  group.add(skirt);
+  addCliffMesh(group, "cliff-rock", rockFaces, "walls/RockSide.png", 0x9a9186);
+  addCliffMesh(group, "cliff-ore", oreFaces, "walls/RockOreSide.png", 0x8a7058);
+
+  if (!peaked) {
+    const pad = 3;
+    const strata = loadTexture(`${ASSET}/edge/Strata.png`, true);
+    strata.repeat.set((colony.width + pad * 2) / 8, (colony.height + pad * 2) / 8);
+    const skirt = new THREE.Mesh(
+      new THREE.PlaneGeometry(colony.width + pad * 2, colony.height + pad * 2),
+      new THREE.MeshLambertMaterial({ color: 0xc4b49a, map: strata }),
+    );
+    skirt.rotation.x = -Math.PI / 2;
+    skirt.position.set(colony.width / 2, -0.04, colony.height / 2);
+    skirt.receiveShadow = true;
+    skirt.name = "strata";
+    group.add(skirt);
+  }
 
   addWater(group, "water", pond, 0x3c7380, 0);
   addWater(group, "stream", stream, 0x4a8490, 0);
@@ -142,6 +157,100 @@ export function buildTerrain(colony: Colony): TerrainResult {
   }
 
   return { group, water, ripples, flow };
+}
+
+function writeCliffFaces(
+  colony: Colony,
+  x: number,
+  z: number,
+  elev: number,
+  y1: number,
+  dest: { pos: number[]; nrm: number[]; uv: number[] },
+): void {
+  const { pos, nrm, uv } = dest;
+  const sides: { elev: number; corners: [number, number, number][]; u0: number; u1: number }[] = [
+    {
+      elev: neighborElev(colony, x + 1, z),
+      u0: (z + 1) * 0.5,
+      u1: z * 0.5,
+      corners: [
+        [x + 1, 0, z + 1],
+        [x + 1, 0, z],
+        [x + 1, y1, z],
+        [x + 1, y1, z + 1],
+      ],
+    },
+    {
+      elev: neighborElev(colony, x - 1, z),
+      u0: z * 0.5,
+      u1: (z + 1) * 0.5,
+      corners: [
+        [x, 0, z],
+        [x, 0, z + 1],
+        [x, y1, z + 1],
+        [x, y1, z],
+      ],
+    },
+    {
+      elev: neighborElev(colony, x, z + 1),
+      u0: x * 0.5,
+      u1: (x + 1) * 0.5,
+      corners: [
+        [x, 0, z + 1],
+        [x + 1, 0, z + 1],
+        [x + 1, y1, z + 1],
+        [x, y1, z + 1],
+      ],
+    },
+    {
+      elev: neighborElev(colony, x, z - 1),
+      u0: (x + 1) * 0.5,
+      u1: x * 0.5,
+      corners: [
+        [x + 1, 0, z],
+        [x, 0, z],
+        [x, y1, z],
+        [x + 1, y1, z],
+      ],
+    },
+  ];
+  for (const side of sides) {
+    if (elev <= side.elev) continue;
+    const y0 = side.elev * TIER_HEIGHT;
+    const v1 = (y1 - y0) / SIDE_TEX_H;
+    const corners = side.corners.map((corner) => [corner[0], corner[1] === 0 ? y0 : y1, corner[2]] as [number, number, number]);
+    pushQuad(pos, nrm, uv, corners, [
+      [side.u0, 0],
+      [side.u1, 0],
+      [side.u1, v1],
+      [side.u0, v1],
+    ]);
+  }
+}
+
+function neighborElev(colony: Colony, x: number, z: number): number {
+  if (x < 0 || z < 0 || x >= colony.width || z >= colony.height) return 0;
+  return colony.elevation[z * colony.width + x] ?? 0;
+}
+
+function addCliffMesh(
+  group: THREE.Group,
+  name: string,
+  data: { pos: number[]; nrm: number[]; uv: number[] },
+  file: string,
+  color: number,
+): void {
+  if (data.pos.length === 0) return;
+  const map = loadTexture(`${ASSET}/${file}`, true);
+  const mesh = new THREE.Mesh(
+    geometryFrom(THREE, data.pos, data.nrm, data.uv),
+    new THREE.MeshLambertMaterial({ color, map }),
+  );
+  mesh.castShadow = false;
+  mesh.receiveShadow = true;
+  mesh.frustumCulled = true;
+  mesh.name = name;
+  group.add(mesh);
 }
 
 function empty(): { pos: number[]; nrm: number[]; uv: number[] } {

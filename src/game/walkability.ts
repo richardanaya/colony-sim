@@ -11,8 +11,10 @@ export function walkability(colony: Colony, options?: { skipMovable?: boolean })
 
   for (let z = 0; z < colony.height; z++) {
     for (let x = 0; x < colony.width; x++) {
-      const kind = colony.terrain[z * colony.width + x];
+      const index = z * colony.width + x;
+      const kind = colony.terrain[index];
       if (kind === "water" || kind === "stream") mark(x, z);
+      if ((colony.elevation[index] ?? 0) >= 1) mark(x, z);
     }
   }
   for (const wall of colony.walls) mark(wall.x, wall.z);

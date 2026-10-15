@@ -5,6 +5,7 @@ import { findPath } from "../src/engine/path.ts";
 import { createSimulation } from "../src/engine/simulation.ts";
 import { SKILL_NAMES } from "../src/engine/types.ts";
 import { COMPACT_VALLEY_AREA, DEFAULT_SEED, VALLEY_HEIGHT, VALLEY_WIDTH, generateValley, type Cell } from "../src/game/generate.ts";
+import { GULCH_RIM } from "../src/game/map.ts";
 import { walkability } from "../src/game/walkability.ts";
 
 const manifest = JSON.parse(fs.readFileSync(new URL("../src/data/manifest.json", import.meta.url), "utf8")) as {
@@ -95,6 +96,11 @@ test("a colonist walks, picks up, and places through the engine", () => {
   assert.equal(sim.blocked(4, 1), false);
 });
 
+test("the floor is one enclosed gulch and rerolls keep that shape", () => {
+  assertGulch(generateValley(DEFAULT_SEED));
+  for (const seed of [1, 2, 99, 0, 0xabcdef, 7 * 997]) assertGulch(generateValley(seed));
+});
+
 test("a different seed builds a different valley", () => {
   const a = snapshot(generateValley(DEFAULT_SEED));
   const b = snapshot(generateValley(DEFAULT_SEED + 1));
@@ -162,6 +168,8 @@ for (const seed of SEEDS) {
       assert.ok(stock.food + stock.timber + stock.stone > 0);
     }
 
+    assertGulch(valley);
+
     const nav = walkability(colony);
     const reachable = flood(nav.blocked, nav.width, nav.height, valley.spawns[0]);
     let open = 0;
@@ -192,9 +200,102 @@ function flood(blocked: Uint8Array, width: number, height: number, start: { x: n
   return seen;
 }
 
+function assertGulch(valley: ReturnType<typeof generateValley>): void {
+  const { colony } = valley;
+  const { elevation, width, height } = colony;
+  assert.equal(elevation.length, width * height);
+  let peak = 0;
+  for (const tier of elevation) if (tier > peak) peak = tier;
+  assert.ok(peak >= 5, `peak ${peak}`);
+
+  const floor = floodWhere(width, height, (x, z) => elevation[z * width + x] === 0);
+  assert.equal(floor.components, 1, "floor split into more than one region");
+
+  const approach = floodWhere(width, height, (x, z) => {
+    const border = x === 0 || z === 0 || x === width - 1 || z === height - 1;
+    return border && elevation[z * width + x] < GULCH_RIM;
+  });
+  assert.equal(approach.components, 1, "more than one way through the rim");
+  assert.ok(approach.size === 2 || approach.size === 3, `approach cells ${approach.size}`);
+
+  const widths: number[] = [];
+  let minZ = height;
+  let maxZ = -1;
+  let maxWidth = 0;
+  for (let z = 0; z < height; z++) {
+    let row = 0;
+    for (let x = 0; x < width; x++) if (elevation[z * width + x] === 0) row += 1;
+    if (row === 0) continue;
+    widths.push(row);
+    if (row > maxWidth) maxWidth = row;
+    if (z < minZ) minZ = z;
+    if (z > maxZ) maxZ = z;
+  }
+  widths.sort((a, b) => a - b);
+  const median = widths[Math.floor(widths.length / 2)] ?? 0;
+  const span = maxZ - minZ + 1;
+  assert.ok(span > median * 3, `span ${span} median width ${median}`);
+  assert.ok(maxWidth < width * 0.45, `max floor width ${maxWidth}`);
+
+  let waterMin = height;
+  let waterMax = -1;
+  for (let z = 0; z < height; z++) {
+    for (let x = 0; x < width; x++) {
+      const kind = colony.terrain[z * width + x];
+      if (kind !== "stream" && kind !== "water") continue;
+      if (z < waterMin) waterMin = z;
+      if (z > waterMax) waterMax = z;
+    }
+  }
+  assert.ok(waterMax - waterMin >= 80, `creek span ${waterMax - waterMin}`);
+
+  for (const cell of valley.clearing) {
+    assert.equal(elevation[cell.z * width + cell.x], 0, `${cell.x},${cell.z} is off the floor`);
+  }
+}
+
+function floodWhere(
+  width: number,
+  height: number,
+  keep: (x: number, z: number) => boolean,
+): { components: number; size: number } {
+  const seen = new Uint8Array(width * height);
+  let components = 0;
+  let size = 0;
+  for (let z = 0; z < height; z++) {
+    for (let x = 0; x < width; x++) {
+      const start = z * width + x;
+      if (seen[start] || !keep(x, z)) continue;
+      components += 1;
+      const stack: Cell[] = [{ x, z }];
+      seen[start] = 1;
+      while (stack.length > 0) {
+        const cell = stack.pop();
+        if (!cell) break;
+        size += 1;
+        const next = [
+          { x: cell.x + 1, z: cell.z },
+          { x: cell.x - 1, z: cell.z },
+          { x: cell.x, z: cell.z + 1 },
+          { x: cell.x, z: cell.z - 1 },
+        ];
+        for (const step of next) {
+          if (step.x < 0 || step.z < 0 || step.x >= width || step.z >= height) continue;
+          const index = step.z * width + step.x;
+          if (seen[index] || !keep(step.x, step.z)) continue;
+          seen[index] = 1;
+          stack.push(step);
+        }
+      }
+    }
+  }
+  return { components, size };
+}
+
 function snapshot(valley: ReturnType<typeof generateValley>) {
   return {
     terrain: valley.colony.terrain,
+    elevation: Array.from(valley.colony.elevation),
     walls: valley.colony.walls,
     props: valley.colony.props.map((prop) => [prop.model, prop.x, prop.z, prop.w, prop.d]),
     names: valley.spawns.map((spawn) => spawn.name),
