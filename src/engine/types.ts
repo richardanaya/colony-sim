@@ -235,6 +235,28 @@ export interface ColonistSave {
   mind: Mind;
 }
 
+/** One map cell. */
+export interface DigCell {
+  x: number;
+  z: number;
+}
+
+/** The tile a colonist is currently cutting, with work in [0, 1]. */
+export interface DigProgress extends DigCell {
+  progress: number;
+}
+
+/**
+ * Dug floor and the designations still queued.
+ * `revision` increments when a tile opens or a save restores the dug set.
+ */
+export interface DigState {
+  revision: number;
+  dug: DigCell[];
+  pending: DigCell[];
+  active: DigProgress | null;
+}
+
 export interface SaveGame {
   version: 1;
   seed: number;
@@ -245,6 +267,8 @@ export interface SaveGame {
   contracts: Contract[];
   research: ResearchState;
   orders: ProductionOrder[];
+  /** Cells opened with Dig. Older saves omit this. */
+  dug?: DigCell[];
 }
 
 export type SimulationBackendName = "typescript" | "wasm";
@@ -275,6 +299,16 @@ export interface Simulation {
   orderPickup(colonistId: number, itemId: string): boolean;
   /** Walk to a cell and set down the object this colonist is carrying. */
   orderPlace(colonistId: number, x: number, z: number): boolean;
+  /**
+   * Designate rock cells. The colonist walks to an open neighbor and digs
+   * each reachable cell in turn. Deeper rock waits until the way is open.
+   */
+  orderDig(colonistId: number, cells: readonly DigCell[]): boolean;
+  digState(): DigState;
+  /** True when this cell was rock and has been dug into floor. */
+  buildable(x: number, z: number): boolean;
+  /** True when this cell is rock that can still be designated. */
+  diggable(x: number, z: number): boolean;
   items(): readonly HaulItemState[];
   blocked(x: number, z: number): boolean;
 }
@@ -308,4 +342,6 @@ export interface CreateSimulationOptions {
   backend?: SimulationBackendName;
   /** Movable objects. The nav grid should not already mark their cells. */
   items?: readonly HaulItemSpawn[];
+  /** Rock cells Dig can open. Omitted means nothing is diggable. */
+  rock?: readonly DigCell[];
 }

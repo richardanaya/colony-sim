@@ -310,6 +310,104 @@ function floodWhere(
   return { components, size };
 }
 
+test("a colonist digs rock into floor and paths through the tunnel", () => {
+  const width = 10;
+  const height = 5;
+  const blocked = new Uint8Array(width * height);
+  blocked.fill(1);
+  const open = (x: number, z: number) => {
+    blocked[z * width + x] = 0;
+  };
+  open(1, 2);
+  open(2, 2);
+  open(5, 2);
+  open(6, 2);
+  const nav = { width, height, blocked };
+  const rock = [
+    { x: 3, z: 2 },
+    { x: 4, z: 2 },
+    { x: 8, z: 4 },
+  ];
+  const sim = createSimulation({
+    spawns: [{ id: 1, key: "nell", name: "Nell", x: 2.5, z: 2.5, yaw: 0 }],
+    nav,
+    seed: 1,
+    rock,
+  });
+
+  assert.equal(sim.orderDig(99, [{ x: 3, z: 2 }]), false);
+  assert.equal(sim.orderDig(1, [{ x: 1, z: 2 }]), false);
+  assert.equal(sim.orderDig(1, [{ x: 8, z: 4 }]), false);
+  assert.equal(sim.orderDig(1, [{ x: 4, z: 2 }]), false);
+  assert.equal(sim.blocked(3, 2), true);
+  assert.equal(sim.buildable(3, 2), false);
+
+  assert.equal(sim.orderDig(1, [{ x: 4, z: 2 }, { x: 3, z: 2 }]), true);
+  sim.advance(1 / 20);
+  assert.equal(sim.blocked(3, 2), true);
+  assert.equal(sim.buildable(3, 2), false);
+  const started = sim.colonists();
+  assert.equal(Math.abs(Math.floor(started.x[0]) - 3) + Math.abs(Math.floor(started.z[0]) - 2), 1);
+
+  let openedFirst = false;
+  for (let i = 0; i < 80 && !openedFirst; i++) {
+    sim.advance(1 / 20);
+    openedFirst = sim.buildable(3, 2);
+  }
+  assert.equal(openedFirst, true);
+  assert.equal(sim.blocked(3, 2), false);
+  assert.equal(sim.blocked(4, 2), true);
+  assert.equal(sim.buildable(4, 2), false);
+  const beside = sim.colonists();
+  assert.equal(Math.abs(Math.floor(beside.x[0]) - 3) + Math.abs(Math.floor(beside.z[0]) - 2), 1);
+
+  let openedSecond = false;
+  for (let i = 0; i < 200 && !openedSecond; i++) {
+    sim.advance(1 / 20);
+    openedSecond = sim.buildable(4, 2);
+  }
+  assert.equal(openedSecond, true);
+  assert.equal(sim.blocked(4, 2), false);
+  assert.equal(sim.digState().dug.length, 2);
+  const through = findPath({ x: 2, z: 2 }, { x: 6, z: 2 }, nav);
+  assert.ok(through);
+  assert.equal(through?.some((cell) => cell.x === 3 && cell.z === 2), true);
+  assert.equal(through?.some((cell) => cell.x === 4 && cell.z === 2), true);
+  assert.equal(sim.orderMove(1, 6, 2), true);
+  let arrived = false;
+  for (let i = 0; i < 200 && !arrived; i++) {
+    sim.advance(1 / 20);
+    const walked = sim.colonists();
+    arrived = Math.hypot(walked.x[0] - 6.5, walked.z[0] - 2.5) < 0.2;
+  }
+  assert.equal(arrived, true);
+  assert.equal(sim.orderDig(1, [{ x: 3, z: 2 }, { x: 4, z: 2 }]), false);
+
+  const before = sim.save();
+  assert.equal(before.dug?.length, 2);
+  const fresh = new Uint8Array(width * height);
+  fresh.fill(1);
+  fresh[2 * width + 1] = 0;
+  fresh[2 * width + 2] = 0;
+  fresh[2 * width + 5] = 0;
+  fresh[2 * width + 6] = 0;
+  const restored = createSimulation({
+    spawns: [{ id: 1, key: "nell", name: "Nell", x: 2.5, z: 2.5, yaw: 0 }],
+    nav: { width, height, blocked: fresh },
+    seed: 1,
+    rock,
+  });
+  assert.equal(restored.blocked(3, 2), true);
+  restored.load(before);
+  assert.equal(restored.blocked(3, 2), false);
+  assert.equal(restored.buildable(4, 2), true);
+  const undone = sim.save();
+  undone.dug = [];
+  sim.load(undone);
+  assert.equal(sim.blocked(3, 2), true);
+  assert.equal(sim.buildable(3, 2), false);
+});
+
 function snapshot(valley: ReturnType<typeof generateValley>) {
   return {
     terrain: valley.colony.terrain,
