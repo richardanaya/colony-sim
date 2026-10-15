@@ -44,7 +44,7 @@ GitHub Pages serves this repository root as https://richardanaya.github.io/galts
 
 ## Data
 
-The valley is generated from a seed in `src/game/generate.ts` on a 120 by 210 map: a long hidden gulch with stepped granite walls, one narrow approach, a creek down the floor, meadows, soil, forest, ore, stone, a cabin, a store, and three to five founders. The title shows the seed and can reroll it. Coordinates are in cells, +X east and +Z north. `src/data/manifest.json` lists the IsoRim models and textures the packs can serve. `tools/build_layout.py` can still write the old full-catalog Hearthstead layout to `src/data/layout.json`. The game does not load that file.
+The valley is generated from a seed in `src/game/generate.ts` on a 188 by 168 map: a broad hidden basin with gentle granite foothills, one narrow approach, a creek across the floor, meadows, soil, forest, ore, stone, a cabin, a store, and three to five founders. The title shows the seed and can reroll it. Coordinates are in cells, +X east and +Z north. `src/data/manifest.json` lists the IsoRim models and textures the packs can serve. `tools/build_layout.py` can still write the old full-catalog Hearthstead layout to `src/data/layout.json`. The game does not load that file.
 
 ## Assets
 

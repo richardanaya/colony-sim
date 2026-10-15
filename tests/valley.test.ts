@@ -207,7 +207,8 @@ function assertGulch(valley: ReturnType<typeof generateValley>): void {
   let peak = 0;
   for (const tier of elevation) if (tier > peak) peak = tier;
   assert.ok(peak >= 8, `peak ${peak}`);
-  assert.ok(risesSharply(elevation, width, height), "walls do not rise sharply beside the floor");
+  assert.ok(risesGently(elevation, width, height), "foothills jump more than one tier");
+  assert.ok(foothillIsLong(elevation, width, height), "the rim rises too close to the floor");
 
   const floor = floodWhere(width, height, (x, z) => elevation[z * width + x] === 0);
   assert.equal(floor.components, 1, "floor split into more than one region");
@@ -232,11 +233,12 @@ function assertGulch(valley: ReturnType<typeof generateValley>): void {
     if (z < minZ) minZ = z;
     if (z > maxZ) maxZ = z;
   }
-  widths.sort((a, b) => a - b);
-  const median = widths[Math.floor(widths.length / 2)] ?? 0;
-  const span = maxZ - minZ + 1;
-  assert.ok(span > median * 3, `span ${span} median width ${median}`);
-  assert.ok(maxWidth < width * 0.45, `max floor width ${maxWidth}`);
+  const broad = widths.filter((row) => row >= 8);
+  broad.sort((a, b) => a - b);
+  const median = broad[Math.floor(broad.length / 2)] ?? 0;
+  assert.ok(maxWidth > width * 0.5, `max floor width ${maxWidth}`);
+  assert.ok(median > width * 0.4, `median floor width ${median}`);
+  assert.ok(broad.length >= 40, `broad rows ${broad.length}`);
 
   let waterMin = height;
   let waterMax = -1;
@@ -255,21 +257,43 @@ function assertGulch(valley: ReturnType<typeof generateValley>): void {
   }
 }
 
-function risesSharply(elevation: Uint8Array, width: number, height: number): boolean {
-  for (let z = 0; z < height; z += 3) {
-    for (let x = 0; x < width; x += 3) {
-      if (elevation[z * width + x] !== 0) continue;
-      for (let dz = -4; dz <= 4; dz++) {
-        for (let dx = -4; dx <= 4; dx++) {
+function risesGently(elevation: Uint8Array, width: number, height: number): boolean {
+  for (let z = 1; z < height - 1; z++) {
+    for (let x = 1; x < width - 1; x++) {
+      const tier = elevation[z * width + x];
+      if (tier < 1) continue;
+      const neighbors = [elevation[z * width + x + 1], elevation[z * width + x - 1], elevation[(z + 1) * width + x], elevation[(z - 1) * width + x]];
+      for (const next of neighbors) {
+        if (next < 1) continue;
+        if (Math.abs(tier - next) > 1) return false;
+      }
+    }
+  }
+  return true;
+}
+
+/** High ground stays many cells out from the broad floor, so the rise is a foothill. */
+function foothillIsLong(elevation: Uint8Array, width: number, height: number): boolean {
+  const rowWidth = new Int16Array(height);
+  for (let z = 0; z < height; z++) {
+    for (let x = 0; x < width; x++) if (elevation[z * width + x] === 0) rowWidth[z] += 1;
+  }
+  const reach = 12;
+  for (let z = 0; z < height; z++) {
+    for (let x = 0; x < width; x++) {
+      if (elevation[z * width + x] < 6) continue;
+      for (let dz = -reach; dz <= reach; dz++) {
+        const nz = z + dz;
+        if (nz < 0 || nz >= height || rowWidth[nz] < 12) continue;
+        for (let dx = -reach; dx <= reach; dx++) {
           const nx = x + dx;
-          const nz = z + dz;
-          if (nx < 0 || nz < 0 || nx >= width || nz >= height) continue;
-          if (elevation[nz * width + nx] >= 6) return true;
+          if (nx < 0 || nx >= width) continue;
+          if (elevation[nz * width + nx] === 0) return false;
         }
       }
     }
   }
-  return false;
+  return true;
 }
 
 function floodWhere(

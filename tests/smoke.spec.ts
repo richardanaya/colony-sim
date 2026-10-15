@@ -352,8 +352,9 @@ test("picking up an object and placing it leaves the object on the new cell", as
 });
 
 /**
- * Click the person on the map. The name tag moves every frame while they walk,
- * so a label hit-test never settles; the canvas click does not wait on it.
+ * Click the person on the map. Founders stand close enough that one name tag
+ * covers another's body, and the tags move every frame, so the canvas click
+ * is forced through the overlay. The label click is the fallback.
  */
 async function selectColonist(page: Page, name: string): Promise<void> {
   const point = await page.evaluate((colonist) => {
@@ -368,7 +369,9 @@ async function selectColonist(page: Page, name: string): Promise<void> {
     if (cx < 8 || cy < 8 || cx > rect.width - 8 || cy > rect.height - 8) return null;
     return { cx, cy };
   }, name);
-  if (point) await page.locator("canvas").click({ position: { x: point.cx, y: point.cy } });
+  // Founders stand close enough that another colonist's name tag covers this
+  // point. force skips that overlay so the canvas still receives the click.
+  if (point) await page.locator("canvas").click({ position: { x: point.cx, y: point.cy }, force: true });
   if (await page.locator("#action-name").textContent() !== name) {
     await page.locator(".label", { hasText: name }).dispatchEvent("click");
   }
