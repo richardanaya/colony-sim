@@ -17,7 +17,7 @@ interface GulchDebug {
   buildable(x: number, z: number): boolean;
   digState(): import("./engine/types").DigState;
   advance(seconds: number): void;
-  setView(x: number, y: number, z: number, tx: number, ty: number, tz: number): void;
+  setView(x: number, y: number, z: number, tx: number, ty: number, tz: number, zoom?: number): void;
 }
 
 interface Window {

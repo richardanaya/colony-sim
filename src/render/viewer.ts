@@ -324,9 +324,10 @@ function publishSim(
     buildable: (x, z) => sim.buildable(x, z),
     digState: () => sim.digState(),
     advance: (seconds) => sim.advance(seconds),
-    setView(x, y, z, tx, ty, tz) {
+    setView(x, y, z, tx, ty, tz, zoom) {
       camera.position.set(x, y, z);
       controls.target.set(tx, ty, tz);
+      if (typeof zoom === "number" && zoom > 0) camera.zoom = zoom;
       camera.lookAt(controls.target);
       camera.updateProjectionMatrix();
     },
