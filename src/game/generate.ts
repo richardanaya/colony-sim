@@ -245,7 +245,10 @@ class Grid {
       const center = this.axisX[z];
       for (let cx = 0; cx < VALLEY_WIDTH; cx++) {
         let elev = this.relief(cx, z, center, half);
-        if (this.onBorder(cx, z) && !this.inCleft(cx, z)) elev = Math.max(elev, GULCH_RIM + 2);
+        if (this.onBorder(cx, z) && !this.inCleft(cx, z)) {
+          const jag = 8 + Math.round(Math.sin(cx * 0.31 + z * 0.17 + this.phase) * 2);
+          elev = Math.max(elev, jag);
+        }
         if (this.inCleft(cx, z)) elev = 0;
         this.setElev(cx, z, elev);
       }
@@ -446,10 +449,12 @@ class Grid {
   private relief(x: number, z: number, center: number, half: number): number {
     const dx = Math.abs(x - center);
     if (dx <= half) return 0;
-    let elev = Math.min(6, Math.ceil((dx - half) * 0.95));
-    if (elev >= 4) {
-      const ridge = Math.sin(x * 0.21 + this.phase) * Math.cos(z * 0.09 + this.phase * 0.5);
-      elev = clamp(elev + Math.round(ridge), 4, 6);
+    const rise = dx - half;
+    let elev = rise < 1.15 ? 1 : Math.min(9, 3 + Math.ceil((rise - 1.15) * 1.8));
+    if (elev >= 3) {
+      const ridge = Math.sin(x * 0.23 + this.phase) * Math.cos(z * 0.08 + this.phase * 0.4);
+      const crest = Math.sin((x + z) * 0.045 + this.phase);
+      elev = clamp(Math.round(elev + ridge * 2.4 + crest * 1.8), 3, 11);
     }
     return elev;
   }
@@ -465,7 +470,7 @@ class Grid {
 
   private setElev(x: number, z: number, elev: number): void {
     if (!inside(x, z)) return;
-    const tier = clamp(elev, 0, 6);
+    const tier = clamp(elev, 0, 11);
     const index = z * VALLEY_WIDTH + x;
     this.elevation[index] = tier;
     if (tier === 0) this.terrain[index] = "grass";

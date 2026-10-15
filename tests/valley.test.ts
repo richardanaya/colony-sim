@@ -206,7 +206,8 @@ function assertGulch(valley: ReturnType<typeof generateValley>): void {
   assert.equal(elevation.length, width * height);
   let peak = 0;
   for (const tier of elevation) if (tier > peak) peak = tier;
-  assert.ok(peak >= 5, `peak ${peak}`);
+  assert.ok(peak >= 8, `peak ${peak}`);
+  assert.ok(risesSharply(elevation, width, height), "walls do not rise sharply beside the floor");
 
   const floor = floodWhere(width, height, (x, z) => elevation[z * width + x] === 0);
   assert.equal(floor.components, 1, "floor split into more than one region");
@@ -252,6 +253,23 @@ function assertGulch(valley: ReturnType<typeof generateValley>): void {
   for (const cell of valley.clearing) {
     assert.equal(elevation[cell.z * width + cell.x], 0, `${cell.x},${cell.z} is off the floor`);
   }
+}
+
+function risesSharply(elevation: Uint8Array, width: number, height: number): boolean {
+  for (let z = 0; z < height; z += 3) {
+    for (let x = 0; x < width; x += 3) {
+      if (elevation[z * width + x] !== 0) continue;
+      for (let dz = -4; dz <= 4; dz++) {
+        for (let dx = -4; dx <= 4; dx++) {
+          const nx = x + dx;
+          const nz = z + dz;
+          if (nx < 0 || nz < 0 || nx >= width || nz >= height) continue;
+          if (elevation[nz * width + nx] >= 6) return true;
+        }
+      }
+    }
+  }
+  return false;
 }
 
 function floodWhere(
