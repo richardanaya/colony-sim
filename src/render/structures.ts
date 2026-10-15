@@ -62,10 +62,25 @@ export function buildStructures(colony: Colony): StructureResult {
   }
 
   const interior = interiorCells(colony);
+  const cliffSides = new Map<WallKind, { pos: number[]; nrm: number[]; uv: number[] }>();
+  const cliffTops = new Map<WallKind, { pos: number[]; nrm: number[]; uv: number[] }>();
+  const cliffBucket = (map: Map<WallKind, { pos: number[]; nrm: number[]; uv: number[] }>, kind: WallKind) => {
+    let found = map.get(kind);
+    if (!found) {
+      found = { pos: [], nrm: [], uv: [] };
+      map.set(kind, found);
+    }
+    return found;
+  };
 
   for (const wall of colony.walls) {
     const { x, z, kind } = wall;
     const height = WALL_FILES[kind].height;
+    if (kind === "rock" || kind === "rockOre") {
+      writeWallSides(x, z, height, walls, cliffBucket(cliffSides, kind));
+      writeWallTop(x, z, height, cliffBucket(cliffTops, kind));
+      continue;
+    }
     const sides = new THREE.Mesh(
       wallSidesGeometry(x, z, height, walls),
       new THREE.MeshLambertMaterial({ color: WALL_FILES[kind].color, map: sideTex[kind] }),
@@ -80,13 +95,35 @@ export function buildStructures(colony: Colony): StructureResult {
     top.receiveShadow = true;
     const cell = new THREE.Group();
     cell.add(sides, top);
-    cell.position.set(0, 0, 0);
     group.add(cell);
 
     const facade = facadeOf(x, z, interior);
-    if (facade) {
-      cutaway.push({ object: cell, side: facade });
-    }
+    if (facade) cutaway.push({ object: cell, side: facade });
+  }
+
+  for (const [kind, data] of cliffSides) {
+    if (data.pos.length === 0) continue;
+    const mesh = new THREE.Mesh(
+      geometryFrom(THREE, data.pos, data.nrm, data.uv),
+      new THREE.MeshLambertMaterial({ color: WALL_FILES[kind].color, map: sideTex[kind] }),
+    );
+    mesh.castShadow = false;
+    mesh.receiveShadow = true;
+    mesh.frustumCulled = true;
+    mesh.name = `${kind}-sides`;
+    group.add(mesh);
+  }
+  for (const [kind, data] of cliffTops) {
+    if (data.pos.length === 0) continue;
+    const mesh = new THREE.Mesh(
+      geometryFrom(THREE, data.pos, data.nrm, data.uv),
+      new THREE.MeshLambertMaterial({ color: WALL_FILES[kind].color, map: topTex[kind] }),
+    );
+    mesh.castShadow = false;
+    mesh.receiveShadow = true;
+    mesh.frustumCulled = true;
+    mesh.name = `${kind}-tops`;
+    group.add(mesh);
   }
 
   for (const roof of colony.roofs) {
@@ -134,9 +171,19 @@ function facadeOf(x: number, z: number, interior: Set<string>): Side | null {
 }
 
 function wallSidesGeometry(x: number, z: number, h: number, walls: Set<string>): THREE.BufferGeometry {
-  const pos: number[] = [];
-  const nrm: number[] = [];
-  const uv: number[] = [];
+  const data = { pos: [] as number[], nrm: [] as number[], uv: [] as number[] };
+  writeWallSides(x, z, h, walls, data);
+  return geometryFrom(THREE, data.pos, data.nrm, data.uv);
+}
+
+function writeWallSides(
+  x: number,
+  z: number,
+  h: number,
+  walls: Set<string>,
+  dest: { pos: number[]; nrm: number[]; uv: number[] },
+): void {
+  const { pos, nrm, uv } = dest;
   const v1 = h / SIDE_TEX_H;
 
   const faces: { nx: number; nz: number; corners: [number, number, number][]; u0: number; u1: number }[] = [];
@@ -205,13 +252,16 @@ function wallSidesGeometry(x: number, z: number, h: number, walls: Set<string>):
       [face.u0, v1],
     ]);
   }
-  return geometryFrom(THREE, pos, nrm, uv);
 }
 
 function wallTopGeometry(x: number, z: number, h: number): THREE.BufferGeometry {
-  const pos: number[] = [];
-  const nrm: number[] = [];
-  const uv: number[] = [];
+  const data = { pos: [] as number[], nrm: [] as number[], uv: [] as number[] };
+  writeWallTop(x, z, h, data);
+  return geometryFrom(THREE, data.pos, data.nrm, data.uv);
+}
+
+function writeWallTop(x: number, z: number, h: number, dest: { pos: number[]; nrm: number[]; uv: number[] }): void {
+  const { pos, nrm, uv } = dest;
   pushQuad(
     pos,
     nrm,
@@ -229,7 +279,6 @@ function wallTopGeometry(x: number, z: number, h: number): THREE.BufferGeometry 
       [(x + 1) * 0.5, z * 0.5],
     ],
   );
-  return geometryFrom(THREE, pos, nrm, uv);
 }
 
 function roofSlopes(

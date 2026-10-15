@@ -244,6 +244,120 @@ test("reroll builds the valley from the new seed", async ({ page }) => {
   await expect(page.locator(".label", { hasText: "Nell" })).toBeVisible();
 });
 
+test("selecting a colonist and choosing Move walks them toward the cell", async ({ page }) => {
+  const problems = watchConsole(page);
+  const target = smokeTargets.find((item) => item.name === "dev");
+  if (!target) throw new Error("missing dev target");
+  await page.goto(target.url, { waitUntil: "networkidle" });
+  await beginAndWaitForValley(page);
+  await page.locator(".label", { hasText: "Nell" }).click();
+  await expect(page.locator("#action-bar")).toBeVisible();
+  await expect(page.locator("#action-name")).toHaveText("Nell");
+  await page.getByRole("button", { name: "Move" }).click();
+  const goal = await page.evaluate(() => {
+    const gulch = window.__gulch;
+    const nell = gulch?.save().colonists[0];
+    if (!gulch || !nell) return null;
+    const sx = Math.floor(nell.x);
+    const sz = Math.floor(nell.z);
+    const steps = [[0, 4], [4, 0], [0, -4], [-4, 0], [0, 5], [5, 0], [3, 3], [-3, 2]];
+    for (const [dx, dz] of steps) {
+      const x = sx + dx;
+      const z = sz + dz;
+      if (gulch.blocked(x, z)) continue;
+      const projected = gulch.project(x + 0.5, 0, z + 0.5);
+      const el = document.elementFromPoint(projected.x, projected.y);
+      if (!(el instanceof HTMLCanvasElement)) continue;
+      const rect = el.getBoundingClientRect();
+      return {
+        x,
+        z,
+        cx: projected.x - rect.left,
+        cy: projected.y - rect.top,
+        fromX: nell.x,
+        fromZ: nell.z,
+      };
+    }
+    return null;
+  });
+  expect(goal).toBeTruthy();
+  const start = Math.hypot(goal!.fromX - (goal!.x + 0.5), goal!.fromZ - (goal!.z + 0.5));
+  expect(start).toBeGreaterThan(2);
+  await page.locator("canvas").click({ position: { x: goal!.cx, y: goal!.cy } });
+  await expect.poll(async () => page.evaluate(({ x, z }) => {
+    const nell = window.__gulch?.save().colonists[0];
+    if (!nell) return 999;
+    return Math.hypot(nell.x - (x + 0.5), nell.z - (z + 0.5));
+  }, goal!)).toBeLessThan(start - 0.5);
+  expect(problems, problems.join("\n")).toEqual([]);
+});
+
+test("picking up an object and placing it leaves the object on the new cell", async ({ page }) => {
+  const problems = watchConsole(page);
+  const target = smokeTargets.find((item) => item.name === "dev");
+  if (!target) throw new Error("missing dev target");
+  await page.goto(target.url, { waitUntil: "networkidle" });
+  await beginAndWaitForValley(page);
+  await page.locator(".label", { hasText: "Nell" }).click();
+  await page.getByRole("button", { name: "Pick up" }).click();
+  const item = await page.evaluate(() => {
+    const gulch = window.__gulch;
+    const found = gulch?.items().find((entry) => entry.id.startsWith("campfire"));
+    const canvas = document.querySelector("canvas");
+    if (!gulch || !found || !(canvas instanceof HTMLCanvasElement)) return null;
+    const projected = gulch.project(found.x + found.w / 2, 0, found.z + found.d / 2);
+    const rect = canvas.getBoundingClientRect();
+    return { id: found.id, x: found.x, z: found.z, cx: projected.x - rect.left, cy: projected.y - rect.top };
+  });
+  expect(item).toBeTruthy();
+  await page.locator("canvas").click({ position: { x: item!.cx, y: item!.cy } });
+  await expect.poll(() => page.evaluate((id) => {
+    const nell = window.__gulch?.save().colonists[0];
+    const found = window.__gulch?.items().find((entry) => entry.id === id);
+    return Boolean(nell && found && found.carrierId === nell.id);
+  }, item!.id)).toBe(true);
+  await expect(page.getByRole("button", { name: "Place" })).toBeEnabled();
+  const dest = await page.evaluate((id) => {
+    const gulch = window.__gulch;
+    const found = gulch?.items().find((entry) => entry.id === id);
+    if (!gulch || !found) return null;
+    const steps = [[0, 3], [3, 0], [0, -3], [-3, 0], [4, 0], [0, 4], [-4, 1], [2, -3]];
+    for (const [dx, dz] of steps) {
+      const x = found.x + dx;
+      const z = found.z + dz;
+      if (x === found.x && z === found.z) continue;
+      if (gulch.blocked(x, z)) continue;
+      const projected = gulch.project(x + 0.5, 0, z + 0.5);
+      const el = document.elementFromPoint(projected.x, projected.y);
+      if (!(el instanceof HTMLCanvasElement)) continue;
+      const rect = el.getBoundingClientRect();
+      return { x, z, cx: projected.x - rect.left, cy: projected.y - rect.top };
+    }
+    return null;
+  }, item!.id);
+  expect(dest).toBeTruthy();
+  expect(dest!.x !== item!.x || dest!.z !== item!.z).toBe(true);
+  await page.getByRole("button", { name: "Place" }).click();
+  await page.locator("canvas").click({ position: { x: dest!.cx, y: dest!.cy } });
+  await expect.poll(() => page.evaluate(({ id, x, z }) => {
+    const found = window.__gulch?.items().find((entry) => entry.id === id);
+    return Boolean(found && found.carrierId === 0 && found.x === x && found.z === z);
+  }, { id: item!.id, x: dest!.x, z: dest!.z })).toBe(true);
+  expect(problems, problems.join("\n")).toEqual([]);
+});
+
+function watchConsole(page: Page): string[] {
+  const problems: string[] = [];
+  page.on("console", (msg) => {
+    const type = msg.type();
+    if (type === "error" || type === "warning") problems.push(`console ${type}: ${msg.text()}`);
+  });
+  page.on("pageerror", (error) => {
+    problems.push(`pageerror: ${error.message}`);
+  });
+  return problems;
+}
+
 async function beginAndWaitForValley(page: Page): Promise<void> {
   await page.evaluate(() => {
     window.__loaderSeen = false;

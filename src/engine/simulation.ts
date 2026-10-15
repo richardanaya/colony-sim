@@ -1,5 +1,21 @@
-import { TICK_DT, TICK_HZ, SKILL_NAMES, type Activity, type ColonistColumns, type ColonistRoster, type ColonistSave, type Contract, type CreateSimulationOptions, type Inventory, type Mind, type Needs, type ProductionOrder, type ResearchState, type SaveGame, type SimEvent, type Simulation, type Skills } from "./types";
+import { findPath, type PathCell } from "./path";
+import { TICK_DT, TICK_HZ, SKILL_NAMES, type Activity, type ColonistColumns, type ColonistRoster, type ColonistSave, type Contract, type CreateSimulationOptions, type HaulItemState, type Inventory, type Mind, type Needs, type ProductionOrder, type ResearchState, type SaveGame, type SimEvent, type Simulation, type Skills } from "./types";
 import { stepWander } from "./wander";
+
+interface HaulItem {
+  id: string;
+  x: number;
+  z: number;
+  w: number;
+  d: number;
+  blocks: boolean;
+  carrierId: number;
+}
+
+type PlayerOrder =
+  | { kind: "move"; x: number; z: number }
+  | { kind: "pickup"; itemId: string }
+  | { kind: "place"; x: number; z: number };
 
 const CAPACITY = 64;
 
@@ -30,6 +46,10 @@ export class TypeScriptSimulation implements Simulation {
   private readonly minds: Mind[];
   private research: ResearchState = { unlocked: [], active: null, progress: 0 };
   private orders: ProductionOrder[] = [];
+  private readonly playerOrders: (PlayerOrder | null)[];
+  private readonly haulWalking: Uint8Array;
+  private readonly haulItems: HaulItem[];
+  private readonly fixedBlocked: Uint8Array;
   private readonly columns: ColonistColumns;
   private accumulator = 0;
   private seed: number;
@@ -59,6 +79,19 @@ export class TypeScriptSimulation implements Simulation {
     this.activity = spawns.map(() => "wander" as const);
     this.wait = new Float32Array(CAPACITY);
     this.paths = spawns.map(() => []);
+    this.playerOrders = spawns.map(() => null);
+    this.haulWalking = new Uint8Array(CAPACITY);
+    this.fixedBlocked = new Uint8Array(options.nav.blocked);
+    this.haulItems = (options.items ?? []).map((item) => ({
+      id: item.id,
+      x: item.x,
+      z: item.z,
+      w: Math.max(1, item.w),
+      d: Math.max(1, item.d),
+      blocks: item.blocks,
+      carrierId: 0,
+    }));
+    this.paintItems();
     spawns.forEach((spawn, index) => {
       this.purseCents[index] = spawn.purseCents ?? 8_000 + index * 1_500;
       this.wait[index] = index * 0.35;
@@ -184,6 +217,8 @@ export class TypeScriptSimulation implements Simulation {
       this.contractId[i] = colonist.contractId;
       this.minds[i] = copyMind(colonist.mind);
       this.activity[i] = accepted(this.contracts, colonist.contractId) ? "work" : "wander";
+      this.playerOrders[i] = null;
+      this.haulWalking[i] = 0;
       this.paths[i] = [];
       this.columns.moving[i] = 0;
       this.copyCurrentToPrevious(i);
@@ -194,6 +229,8 @@ export class TypeScriptSimulation implements Simulation {
     // Beliefs, receptivity, inventories, research, and production orders are
     // stored and saved. They are not stepped. See docs/ENGINE.md.
     this.schedule();
+    this.stepHaul(dt);
+    this.syncCarried();
     stepWander(
       {
         count: this.columns.count,
@@ -219,7 +256,243 @@ export class TypeScriptSimulation implements Simulation {
    */
   private schedule(): void {
     for (let i = 0; i < this.columns.count; i++) {
-      this.activity[i] = accepted(this.contracts, this.contractId[i]) ? "work" : "wander";
+      if (this.playerOrders[i]) this.activity[i] = "haul";
+      else if (accepted(this.contracts, this.contractId[i])) this.activity[i] = "work";
+      else this.activity[i] = "wander";
+    }
+  }
+
+  orderMove(colonistId: number, x: number, z: number): boolean {
+    const index = this.indexOf(colonistId);
+    if (index < 0 || !this.openCell(x, z)) return false;
+    this.setOrder(index, { kind: "move", x, z });
+    return true;
+  }
+
+  orderPickup(colonistId: number, itemId: string): boolean {
+    const index = this.indexOf(colonistId);
+    const item = this.haulItems.find((entry) => entry.id === itemId);
+    if (index < 0 || !item || item.carrierId !== 0) return false;
+    if (this.carriedBy(colonistId)) return false;
+    if (!this.standBeside(index, item)) return false;
+    this.setOrder(index, { kind: "pickup", itemId });
+    return true;
+  }
+
+  orderPlace(colonistId: number, x: number, z: number): boolean {
+    const index = this.indexOf(colonistId);
+    const item = this.carriedBy(colonistId);
+    if (index < 0 || !item) return false;
+    if (!this.footprintFree(x, z, item.w, item.d)) return false;
+    if (!this.standBeside(index, { x, z, w: item.w, d: item.d, blocks: item.blocks })) return false;
+    this.setOrder(index, { kind: "place", x, z });
+    return true;
+  }
+
+  items(): readonly HaulItemState[] {
+    return this.haulItems.map((item) => ({ ...item }));
+  }
+
+  blocked(x: number, z: number): boolean {
+    if (x < 0 || z < 0 || x >= this.nav.width || z >= this.nav.height) return true;
+    return this.nav.blocked[z * this.nav.width + x] === 1;
+  }
+
+  private setOrder(index: number, order: PlayerOrder): void {
+    this.playerOrders[index] = order;
+    this.paths[index] = [];
+    this.haulWalking[index] = 0;
+    this.activity[index] = "haul";
+  }
+
+  private indexOf(colonistId: number): number {
+    return this.ids.indexOf(colonistId);
+  }
+
+  private carriedBy(colonistId: number): HaulItem | undefined {
+    return this.haulItems.find((item) => item.carrierId === colonistId);
+  }
+
+  private openCell(x: number, z: number): boolean {
+    if (x < 0 || z < 0 || x >= this.nav.width || z >= this.nav.height) return false;
+    return this.nav.blocked[z * this.nav.width + x] === 0;
+  }
+
+  private footprintFree(x: number, z: number, w: number, d: number): boolean {
+    for (let dz = 0; dz < d; dz++) {
+      for (let dx = 0; dx < w; dx++) {
+        const px = x + dx;
+        const pz = z + dz;
+        if (px < 0 || pz < 0 || px >= this.nav.width || pz >= this.nav.height) return false;
+        if (this.fixedBlocked[pz * this.nav.width + px]) return false;
+        for (const item of this.haulItems) {
+          if (item.carrierId !== 0 || !item.blocks) continue;
+          if (px >= item.x && px < item.x + item.w && pz >= item.z && pz < item.z + item.d) return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  private standBeside(index: number, item: { x: number; z: number; w: number; d: number; blocks: boolean }): boolean {
+    return this.approach(index, item) !== null;
+  }
+
+  private approach(index: number, item: { x: number; z: number; w: number; d: number; blocks: boolean }): PathCell | null {
+    const here = { x: Math.floor(this.columns.x[index]), z: Math.floor(this.columns.z[index]) };
+    const goals: PathCell[] = [];
+    if (!item.blocks) goals.push({ x: item.x, z: item.z });
+    for (let dz = 0; dz < item.d; dz++) {
+      for (let dx = 0; dx < item.w; dx++) {
+        const x = item.x + dx;
+        const z = item.z + dz;
+        for (const [ox, oz] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+          const nx = x + ox;
+          const nz = z + oz;
+          if (nx >= item.x && nx < item.x + item.w && nz >= item.z && nz < item.z + item.d) continue;
+          if (!this.openCell(nx, nz)) continue;
+          if (!goals.some((goal) => goal.x === nx && goal.z === nz)) goals.push({ x: nx, z: nz });
+        }
+      }
+    }
+    goals.sort((a, b) => Math.abs(a.x - here.x) + Math.abs(a.z - here.z) - (Math.abs(b.x - here.x) + Math.abs(b.z - here.z)));
+    for (const goal of goals) {
+      if (goal.x === here.x && goal.z === here.z) return goal;
+      if (findPath(here, goal, this.nav)) return goal;
+    }
+    return null;
+  }
+
+  private stepHaul(dt: number): void {
+    for (let i = 0; i < this.columns.count; i++) {
+      if (this.activity[i] !== "haul" || !this.playerOrders[i]) continue;
+      if (this.paths[i].length === 0) {
+        if (this.haulWalking[i]) {
+          this.finishOrder(i);
+          continue;
+        }
+        const goal = this.goalFor(i);
+        if (!goal) {
+          this.clearOrder(i);
+          continue;
+        }
+        const here = { x: Math.floor(this.columns.x[i]), z: Math.floor(this.columns.z[i]) };
+        if (here.x === goal.x && here.z === goal.z) {
+          this.finishOrder(i);
+          continue;
+        }
+        const path = findPath(here, goal, this.nav);
+        if (!path || path.length === 0) {
+          this.clearOrder(i);
+          continue;
+        }
+        this.paths[i] = path;
+        this.haulWalking[i] = 1;
+      }
+      this.walkPath(i, dt);
+    }
+  }
+
+  private goalFor(index: number): PathCell | null {
+    const order = this.playerOrders[index];
+    if (!order) return null;
+    if (order.kind === "move") return this.openCell(order.x, order.z) ? { x: order.x, z: order.z } : null;
+    if (order.kind === "pickup") {
+      const item = this.haulItems.find((entry) => entry.id === order.itemId);
+      if (!item || item.carrierId !== 0) return null;
+      return this.approach(index, item);
+    }
+    const item = this.carriedBy(this.ids[index]);
+    if (!item || !this.footprintFree(order.x, order.z, item.w, item.d)) return null;
+    return this.approach(index, { ...item, x: order.x, z: order.z });
+  }
+
+  private walkPath(index: number, dt: number): void {
+    const path = this.paths[index];
+    const next = path[0];
+    if (!next) return;
+    const tx = next.x + 0.5;
+    const tz = next.z + 0.5;
+    const x = this.columns.x;
+    const z = this.columns.z;
+    for (let other = 0; other < this.columns.count; other++) {
+      if (other === index) continue;
+      const nearNext = Math.hypot(x[other] - tx, z[other] - tz) < 0.42;
+      const nearMe = Math.hypot(x[other] - x[index], z[other] - z[index]) < 1;
+      if (nearNext && nearMe) {
+        this.wait[index] = 0.15;
+        this.columns.moving[index] = 0;
+        return;
+      }
+    }
+    const dx = tx - x[index];
+    const dz = tz - z[index];
+    const dist = Math.hypot(dx, dz);
+    if (dist < 0.05) {
+      x[index] = tx;
+      z[index] = tz;
+      path.shift();
+      this.columns.moving[index] = 0;
+      return;
+    }
+    const step = Math.min(dist, 1.45 * dt);
+    x[index] += (dx / dist) * step;
+    z[index] += (dz / dist) * step;
+    this.columns.phase[index] += dt * 9;
+    const desired = Math.atan2(dx, dz);
+    const from = this.columns.yaw[index];
+    const delta = Math.atan2(Math.sin(desired - from), Math.cos(desired - from));
+    this.columns.yaw[index] = from + delta * (1 - Math.exp(-10 * dt));
+    this.columns.moving[index] = 1;
+  }
+
+  private finishOrder(index: number): void {
+    const order = this.playerOrders[index];
+    if (order?.kind === "pickup") {
+      const item = this.haulItems.find((entry) => entry.id === order.itemId);
+      if (item && item.carrierId === 0) item.carrierId = this.ids[index];
+    } else if (order?.kind === "place") {
+      const item = this.carriedBy(this.ids[index]);
+      if (item && this.footprintFree(order.x, order.z, item.w, item.d)) {
+        item.x = order.x;
+        item.z = order.z;
+        item.carrierId = 0;
+      }
+    }
+    this.paintItems();
+    this.clearOrder(index);
+  }
+
+  private clearOrder(index: number): void {
+    this.playerOrders[index] = null;
+    this.paths[index] = [];
+    this.haulWalking[index] = 0;
+    this.activity[index] = "wander";
+  }
+
+  private syncCarried(): void {
+    for (const item of this.haulItems) {
+      if (item.carrierId === 0) continue;
+      const index = this.indexOf(item.carrierId);
+      if (index < 0) continue;
+      item.x = Math.floor(this.columns.x[index]);
+      item.z = Math.floor(this.columns.z[index]);
+    }
+  }
+
+  private paintItems(): void {
+    this.nav.blocked.set(this.fixedBlocked);
+    const width = this.nav.width;
+    for (const item of this.haulItems) {
+      if (!item.blocks || item.carrierId !== 0) continue;
+      for (let dz = 0; dz < item.d; dz++) {
+        for (let dx = 0; dx < item.w; dx++) {
+          const x = item.x + dx;
+          const z = item.z + dz;
+          if (x < 0 || z < 0 || x >= width || z >= this.nav.height) continue;
+          this.nav.blocked[z * width + x] = 1;
+        }
+      }
     }
   }
 

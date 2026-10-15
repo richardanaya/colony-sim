@@ -7,7 +7,9 @@ import { formatSeed } from "../game/generate";
 import { createValley } from "../game/valley";
 import { walkability } from "../game/walkability";
 import { buildAnimal, swayAnimals, type PosedAnimal } from "./animals";
+import { placeProps } from "./batch";
 import { buildFigure } from "./figures";
+import { mountOrders } from "./interact";
 import { MaterialLibrary, texturesSettled, usedTexturesList } from "./materials";
 import { loadModels } from "./models";
 import { instantiate } from "./obj";
@@ -19,6 +21,7 @@ import type { LoadGate } from "../ui/loading";
 interface ColonistView {
   group: THREE.Group;
   label: HTMLDivElement;
+  pick: THREE.Mesh;
 }
 
 export function mount(root: HTMLElement, gate: LoadGate, seed: number): void {
@@ -81,23 +84,22 @@ async function boot(
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xc5d0b4);
   const span = Math.max(colony.width, colony.height);
-  scene.fog = new THREE.Fog(0xc5d0b4, span * 2.4, span * 4.2);
+  scene.fog = new THREE.Fog(0xc5d0b4, 90, span * 1.35);
 
-  const cx = colony.width / 2;
-  const cz = colony.height / 2;
-  const frustum = span * 0.86;
-  const camera = new THREE.OrthographicCamera(-frustum, frustum, frustum / 2, -frustum / 2, 0.1, span * 6);
-  camera.position.set(cx + span * 0.42, span * 0.5, cz - span * 0.5);
+  const hx = spawns.reduce((sum, spawn) => sum + spawn.x, 0) / Math.max(1, spawns.length);
+  const hz = spawns.reduce((sum, spawn) => sum + spawn.z, 0) / Math.max(1, spawns.length);
+  const viewHeight = 46;
+  const camera = new THREE.OrthographicCamera(-viewHeight, viewHeight, viewHeight / 2, -viewHeight / 2, 0.1, span * 4);
+  camera.position.set(hx + 28, 36, hz - 32);
 
   const controls = new OrbitControls(camera, renderer.domElement);
-  controls.target.set(cx, 0.3, cz);
+  controls.target.set(hx, 0.3, hz);
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
   controls.screenSpacePanning = true;
   controls.minPolarAngle = 0.28;
   controls.maxPolarAngle = Math.PI / 2.08;
-  controls.minZoom = 0.35;
-  controls.maxZoom = 8;
+  controls.maxZoom = 12;
   controls.zoomSpeed = 0.85;
   controls.mouseButtons = {
     LEFT: THREE.MOUSE.PAN,
@@ -109,23 +111,23 @@ async function boot(
   scene.add(new THREE.HemisphereLight(0xd7e4c8, 0x6a5436, 0.62));
   scene.add(new THREE.AmbientLight(0xfff4e4, 0.28));
   const sun = new THREE.DirectionalLight(0xfff0d2, 1.15);
-  sun.position.set(cx + span * 0.28, span * 0.42, cz - span * 0.18);
-  sun.target.position.set(cx, 0, cz);
+  sun.position.set(hx + 40, 52, hz - 24);
+  sun.target.position.set(hx, 0, hz);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
-  const shadow = span * 0.62;
+  const shadow = 48;
   sun.shadow.camera.left = -shadow;
   sun.shadow.camera.right = shadow;
   sun.shadow.camera.top = shadow;
   sun.shadow.camera.bottom = -shadow;
   sun.shadow.camera.near = 1;
-  sun.shadow.camera.far = span * 3;
+  sun.shadow.camera.far = 160;
   sun.shadow.bias = -0.0006;
   sun.shadow.normalBias = 0.025;
   scene.add(sun);
   scene.add(sun.target);
   const fill = new THREE.DirectionalLight(0xd5e2f4, 0.32);
-  fill.position.set(cx - 12, 14, cz + 16);
+  fill.position.set(hx - 12, 14, hz + 16);
   scene.add(fill);
 
   const terrain = buildTerrain(colony);
@@ -151,29 +153,7 @@ async function boot(
     cutaway.push({ object: group, side: door.facade });
   }
 
-  for (const prop of colony.props) {
-    const loaded = models.get(prop.model);
-    if (!loaded) continue;
-    const group = instantiate(loaded, {
-      materials,
-      stuff: prop.stuff,
-      tint: prop.tint ? new THREE.Color(prop.tint) : null,
-      scale: prop.scale,
-      stretch: prop.stretch,
-      yaw: prop.yaw,
-      skipPrefix: prop.skipPrefix,
-    });
-    const w = prop.w ?? 1;
-    const d = prop.d ?? 1;
-    group.position.set(prop.x + w / 2, prop.y ?? 0, prop.z + d / 2);
-    group.name = prop.id;
-    scene.add(group);
-    if (prop.model === "campfire") {
-      const fire = new THREE.PointLight(0xff8a3c, 2.4, 7, 2);
-      fire.position.set(prop.x + w / 2, 0.55, prop.z + d / 2);
-      scene.add(fire);
-    }
-  }
+  const movables = placeProps(colony, models, materials, scene);
 
   const figures = new Map(colony.figures.map((figure) => [figure.id, figure]));
   for (const figure of colony.figures) {
@@ -181,20 +161,48 @@ async function boot(
     scene.add(buildFigure(figure, models, materials));
   }
 
-  const sim = createSimulation({ spawns, nav: walkability(colony), seed });
+  const sim = createSimulation({
+    spawns,
+    nav: walkability(colony, { skipMovable: true }),
+    seed,
+    items: colony.props.filter((prop) => prop.movable).map((prop) => ({
+      id: prop.id,
+      x: prop.x,
+      z: prop.z,
+      w: prop.w ?? 1,
+      d: prop.d ?? 1,
+      blocks: prop.blocks !== false,
+    })),
+  });
   const roster = sim.roster();
   const views: ColonistView[] = roster.keys.map((key, index) => {
     const figure = figures.get(key);
     if (!figure) throw new Error(`Missing figure ${key}`);
     const group = buildFigure(figure, models, materials);
+    const pick = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.38, 0.38, 1.7, 8),
+      new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }),
+    );
+    pick.position.y = 0.85;
+    pick.userData.colonistIndex = index;
+    group.add(pick);
     scene.add(group);
     const label = document.createElement("div");
     label.className = "label";
     label.textContent = roster.names[index] ?? figure.name;
     labels.append(label);
-    return { group, label };
+    return { group, label, pick };
   });
-  publishSim(sim);
+  const orders = mountOrders(
+    root,
+    renderer.domElement,
+    camera,
+    scene,
+    sim,
+    views.map((view) => ({ group: view.group, label: view.label, pick: view.pick })),
+    movables,
+  );
+  publishSim(sim, camera, renderer.domElement);
 
   const posed: PosedAnimal[] = colony.animals.map((animal) => {
     const built = buildAnimal(animal, models, materials);
@@ -217,11 +225,14 @@ async function boot(
 
   const resize = () => {
     const aspect = window.innerWidth / Math.max(1, window.innerHeight);
-    camera.left = (-frustum * aspect) / 2;
-    camera.right = (frustum * aspect) / 2;
-    camera.top = frustum / 2;
-    camera.bottom = -frustum / 2;
+    camera.left = (-viewHeight * aspect) / 2;
+    camera.right = (viewHeight * aspect) / 2;
+    camera.top = viewHeight / 2;
+    camera.bottom = -viewHeight / 2;
     camera.updateProjectionMatrix();
+    const zoomForHeight = viewHeight / (colony.height * 1.08);
+    const zoomForWidth = (viewHeight * aspect) / (colony.width * 1.08);
+    controls.minZoom = Math.min(zoomForHeight, zoomForWidth, 1);
     renderer.setSize(window.innerWidth, window.innerHeight);
   };
   resize();
@@ -256,6 +267,7 @@ async function boot(
     for (const material of materials.flicker) {
       material.emissiveIntensity = 0.45 + Math.sin(visualTime * 8 + material.id) * 0.28;
     }
+    orders.update(sampled);
     placeLabels(views, sampled, camera, labelAnchor, renderer.domElement);
     renderer.render(scene, camera);
     gate.markFrame();
@@ -264,13 +276,24 @@ async function boot(
   frame();
 }
 
-function publishSim(sim: Simulation): void {
+function publishSim(sim: Simulation, camera: THREE.Camera, canvas: HTMLCanvasElement): void {
+  const projected = new THREE.Vector3();
   window.__gulch = {
     get tick() {
       return sim.tick;
     },
     save: () => sim.save(),
     load: (save: SaveGame) => sim.load(save),
+    project(x: number, y: number, z: number) {
+      projected.set(x, y, z).project(camera);
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (projected.x * 0.5 + 0.5) * rect.width + rect.left,
+        y: (-projected.y * 0.5 + 0.5) * rect.height + rect.top,
+      };
+    },
+    items: () => sim.items().map((item) => ({ ...item })),
+    blocked: (x: number, z: number) => sim.blocked(x, z),
   };
 }
 

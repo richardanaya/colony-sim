@@ -1,4 +1,4 @@
-import type { NavGrid } from "./types";
+import type { Activity, NavGrid } from "./types";
 
 interface Cell {
   x: number;
@@ -13,10 +13,11 @@ interface Cell {
 export function stepWander(state: WanderState, nav: NavGrid, dt: number): void {
   const { count, x, z, yaw, phase, wait, moving, paths, activity } = state;
   for (let i = 0; i < count; i++) {
-    if (activity[i] !== "wander") {
+    if (activity[i] === "work") {
       moving[i] = 0;
       continue;
     }
+    if (activity[i] !== "wander") continue;
     if (wait[i] > 0) {
       wait[i] -= dt;
       moving[i] = 0;
@@ -77,7 +78,7 @@ export interface WanderState {
   wait: Float32Array;
   moving: Uint8Array;
   paths: Cell[][];
-  activity: ("wander" | "work")[];
+  activity: Activity[];
   random(): number;
 }
 

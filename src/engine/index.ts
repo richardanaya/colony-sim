@@ -22,6 +22,8 @@ export type {
   IdeaSeed,
   IdeaVisibility,
   InfectionStage,
+  HaulItemSpawn,
+  HaulItemState,
   Inventory,
   JobKind,
   Mind,
