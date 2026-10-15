@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { ISORIM } from "../assets/paths";
 import { TIER_HEIGHT, type Colony, type TerrainKind } from "../game/map";
 import { geometryFrom, pushQuad } from "./geometry";
+import { attachLevelCut } from "./levelCut";
 import { loadTexture } from "./materials";
 
 const ASSET = `${ISORIM}/textures`;
@@ -100,7 +101,7 @@ export function buildTerrain(colony: Colony, dug: ReadonlySet<string> = new Set(
     const map = loadTexture(`${ASSET}/${style.file}`, true);
     const mesh = new THREE.Mesh(
       geometryFrom(THREE, data.pos, data.nrm, data.uv),
-      new THREE.MeshLambertMaterial({ color: style.color, map }),
+      rockMaterial(style.color, map),
     );
     mesh.receiveShadow = true;
     mesh.name = kind;
@@ -352,7 +353,7 @@ function addCarvedMesh(group: THREE.Group, data: { pos: number[]; nrm: number[];
   if (data.pos.length === 0) return;
   const mesh = new THREE.Mesh(
     geometryFrom(THREE, data.pos, data.nrm, data.uv),
-    new THREE.MeshLambertMaterial({ color: 0xffffff, map: carvedRockTexture() }),
+    rockMaterial(0xffffff, carvedRockTexture()),
   );
   mesh.castShadow = false;
   mesh.receiveShadow = true;
@@ -365,7 +366,7 @@ function addCarvedLip(group: THREE.Group, data: { pos: number[]; nrm: number[]; 
   if (data.pos.length === 0) return;
   const mesh = new THREE.Mesh(
     geometryFrom(THREE, data.pos, data.nrm, data.uv),
-    new THREE.MeshLambertMaterial({ color: 0xc4b6a2, map: carvedRockTexture() }),
+    rockMaterial(0xc4b6a2, carvedRockTexture()),
   );
   mesh.receiveShadow = true;
   mesh.name = "cliff-carved-lip";
@@ -395,13 +396,19 @@ function addCliffMesh(
   const map = loadTexture(`${ASSET}/${file}`, true);
   const mesh = new THREE.Mesh(
     geometryFrom(THREE, data.pos, data.nrm, data.uv),
-    new THREE.MeshLambertMaterial({ color, map }),
+    rockMaterial(color, map),
   );
   mesh.castShadow = false;
   mesh.receiveShadow = true;
   mesh.frustumCulled = true;
   mesh.name = name;
   group.add(mesh);
+}
+
+function rockMaterial(color: number, map: THREE.Texture): THREE.MeshLambertMaterial {
+  const material = new THREE.MeshLambertMaterial({ color, map });
+  attachLevelCut(material);
+  return material;
 }
 
 function empty(): { pos: number[]; nrm: number[]; uv: number[] } {

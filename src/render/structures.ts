@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { ISORIM } from "../assets/paths";
 import { TIER_HEIGHT, type Colony, type Side, type WallKind } from "../game/map";
 import { geometryFrom, pushQuad } from "./geometry";
+import { attachLevelCut } from "./levelCut";
 import { loadTexture } from "./materials";
 
 const ASSET = `${ISORIM}/textures`;
@@ -109,7 +110,7 @@ export function buildStructures(colony: Colony, dug: ReadonlySet<string> = new S
     if (data.pos.length === 0) continue;
     const mesh = new THREE.Mesh(
       geometryFrom(THREE, data.pos, data.nrm, data.uv),
-      new THREE.MeshLambertMaterial({ color: WALL_FILES[kind].color, map: sideTex[kind] }),
+      cragMaterial(WALL_FILES[kind].color, sideTex[kind]),
     );
     mesh.castShadow = false;
     mesh.receiveShadow = true;
@@ -121,7 +122,7 @@ export function buildStructures(colony: Colony, dug: ReadonlySet<string> = new S
     if (data.pos.length === 0) continue;
     const mesh = new THREE.Mesh(
       geometryFrom(THREE, data.pos, data.nrm, data.uv),
-      new THREE.MeshLambertMaterial({ color: WALL_FILES[kind].color, map: topTex[kind] }),
+      cragMaterial(WALL_FILES[kind].color, topTex[kind]),
     );
     mesh.castShadow = false;
     mesh.receiveShadow = true;
@@ -190,7 +191,7 @@ export function rebuildCrags(colony: Colony, group: THREE.Group, dug: ReadonlySe
     if (data.pos.length === 0) continue;
     const mesh = new THREE.Mesh(
       geometryFrom(THREE, data.pos, data.nrm, data.uv),
-      new THREE.MeshLambertMaterial({ color: WALL_FILES[kind].color, map: sideTex[kind] }),
+      cragMaterial(WALL_FILES[kind].color, sideTex[kind]),
     );
     mesh.castShadow = false;
     mesh.receiveShadow = true;
@@ -202,7 +203,7 @@ export function rebuildCrags(colony: Colony, group: THREE.Group, dug: ReadonlySe
     if (data.pos.length === 0) continue;
     const mesh = new THREE.Mesh(
       geometryFrom(THREE, data.pos, data.nrm, data.uv),
-      new THREE.MeshLambertMaterial({ color: WALL_FILES[kind].color, map: topTex[kind] }),
+      cragMaterial(WALL_FILES[kind].color, topTex[kind]),
     );
     mesh.castShadow = false;
     mesh.receiveShadow = true;
@@ -210,6 +211,12 @@ export function rebuildCrags(colony: Colony, group: THREE.Group, dug: ReadonlySe
     mesh.name = `${kind}-tops`;
     group.add(mesh);
   }
+}
+
+function cragMaterial(color: number, map: THREE.Texture): THREE.MeshLambertMaterial {
+  const material = new THREE.MeshLambertMaterial({ color, map });
+  attachLevelCut(material);
+  return material;
 }
 
 function standingWalls(colony: Colony, dug: ReadonlySet<string>): Set<string> {

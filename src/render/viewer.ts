@@ -10,6 +10,7 @@ import { buildAnimal, swayAnimals, type PosedAnimal } from "./animals";
 import { placeProps } from "./batch";
 import { buildFigure } from "./figures";
 import { mountOrders } from "./interact";
+import { syncLevelView } from "./levelCut";
 import { MaterialLibrary, texturesSettled, usedTexturesList } from "./materials";
 import { loadModels } from "./models";
 import { instantiate } from "./obj";
@@ -288,6 +289,7 @@ async function boot(
       material.emissiveIntensity = 0.45 + Math.sin(visualTime * 8 + material.id) * 0.28;
     }
     orders.update(sampled);
+    syncLevelView(camera.zoom, sampled, (x, z) => sim.buildable(Math.floor(x), Math.floor(z)));
     placeLabels(views, sampled, camera, labelAnchor, renderer.domElement);
     renderer.render(scene, camera);
     gate.markFrame();
@@ -319,6 +321,7 @@ function publishSim(
     },
     items: () => sim.items().map((item) => ({ ...item })),
     blocked: (x: number, z: number) => sim.blocked(x, z),
+    orderMove: (colonistId, x, z) => sim.orderMove(colonistId, x, z),
     orderDig: (colonistId, cells) => sim.orderDig(colonistId, cells),
     diggable: (x, z) => sim.diggable(x, z),
     buildable: (x, z) => sim.buildable(x, z),

@@ -12,6 +12,7 @@ interface GulchDebug {
   project(x: number, y: number, z: number): { x: number; y: number };
   items(): import("./engine/types").HaulItemState[];
   blocked(x: number, z: number): boolean;
+  orderMove(colonistId: number, x: number, z: number): boolean;
   orderDig(colonistId: number, cells: { x: number; z: number }[]): boolean;
   diggable(x: number, z: number): boolean;
   buildable(x: number, z: number): boolean;
