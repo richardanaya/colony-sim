@@ -1,7 +1,7 @@
 import * as THREE from "three";
+import { ISORIM } from "../assets/paths";
 import catalog from "../data/materials.json";
-import type { Stuff } from "../types";
-import { ISORIM } from "./paths";
+import type { Stuff } from "../game/map";
 
 interface MatDef {
   color: [number, number, number];

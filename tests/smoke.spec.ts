@@ -43,9 +43,34 @@ for (const target of smokeTargets) {
     });
 
     await page.goto(target.url, { waitUntil: "networkidle" });
+    await expect(page).toHaveTitle("Galt's Gulch");
+    await expect(page.locator("#title-screen")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Galt's Gulch" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Begin" })).toBeVisible();
+    await page.getByRole("button", { name: "Begin" }).click();
+    await expect(page.locator("#title-screen")).toBeHidden();
     await expect(page.locator("canvas")).toBeVisible();
     await expect(page.locator("#status")).toHaveText("Near walls fold away as you orbit.");
     await expect(page.locator(".label", { hasText: "Nell" })).toBeVisible();
+    await expect.poll(() => page.evaluate(() => window.__gulch?.tick ?? 0)).toBeGreaterThan(0);
+    const mind = await page.evaluate(() => {
+      const saved = window.__gulch?.save();
+      const founder = saved?.colonists[0];
+      return {
+        residence: founder?.mind.residence,
+        stated: founder?.mind.stated,
+        receptivity: founder?.mind.receptivity,
+        goods: founder ? Object.keys(founder.mind.inventory).length : 0,
+        hasResearch: Boolean(saved && saved.research),
+        active: saved ? saved.research.active : "missing",
+      };
+    });
+    expect(mind.residence).toBe("founder");
+    expect(mind.stated).toBe("objectivism");
+    expect(mind.receptivity).toBeGreaterThan(0);
+    expect(mind.goods).toBeGreaterThan(0);
+    expect(mind.hasResearch).toBe(true);
+    expect(mind.active).toBeNull();
 
     const box = await page.locator("canvas").boundingBox();
     expect(box?.width ?? 0).toBeGreaterThan(200);
@@ -61,7 +86,7 @@ for (const target of smokeTargets) {
     expect(urls.some((url) => url.endsWith("/assets/isorim/models/bed.obj"))).toBe(true);
     expect(urls.some((url) => url.endsWith("/assets/isorim/textures/ground/Grass.png"))).toBe(true);
     if (target.name === "pages") {
-      expect(urls.every((url) => url.includes("/colony-sim/"))).toBe(true);
+      expect(urls.every((url) => url.includes("/galts-gulch/"))).toBe(true);
     }
     for (const [url, status] of assetStatus) {
       expect(status, url).toBeLessThan(400);

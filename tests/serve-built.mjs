@@ -5,7 +5,7 @@ import path from "node:path";
 import { pagesPort, previewPort } from "./targets.mjs";
 
 const root = process.cwd();
-const prefix = "/colony-sim";
+const prefix = "/galts-gulch";
 
 const preview = spawn(
   process.execPath,

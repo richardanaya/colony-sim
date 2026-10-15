@@ -128,8 +128,9 @@ export interface Mark {
 }
 
 /**
- * Plain description of a colony. A simulation can replace this object later;
- * the viewer only reads it.
+ * Static map the viewer draws. The simulation does not live in this object.
+ * `tools/build_layout.py` still writes the Hearthstead layout; the game
+ * presents that geometry as the Colorado valley.
  */
 export interface Colony {
   name: string;
