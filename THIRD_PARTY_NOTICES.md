@@ -8,7 +8,7 @@ https://github.com/kndzio/IsoRim
 
 IsoRim is a visual mod that draws RimWorld with an isometric camera. Its own readme notes that the project was created with the use of AI and that credit is not required to use the art. The repository is also MIT-licensed, so the license text is included here.
 
-The models used in this viewer were taken from `Models.7z` in that repository. IsoRim does not ship a separate `.mtl` file in the archive; material colours and swatch names were read from `tools/make_models.py` and stored in `src/data/materials.json`. Textures were copied from `Textures/IsoRim/`. Formats and the file list are in `assets/isorim/README.md`.
+Every model in `Models.7z` from that repository is included. IsoRim does not ship a separate `.mtl` file in the archive; material colours and swatch names were read from `tools/make_models.py` and stored in `src/data/materials.json`. World textures were copied from `Textures/IsoRim/` (ground, walls, roofs, water, swatches, edge, and damage). The mod’s UI icons, colour-grading LUTs, and About-page images are not part of the colony and are not copied. Formats are described in `assets/isorim/README.md`.
 
 ```
 MIT License

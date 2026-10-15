@@ -1,17 +1,16 @@
 import * as THREE from "three";
-import type { Colonist } from "../types";
+import type { Figure } from "../types";
 import type { MaterialLibrary } from "./materials";
 import { instantiate, type LoadedModel } from "./obj";
 
-export function buildColonist(
-  colonist: Colonist,
+export function buildFigure(
+  figure: Figure,
   models: Map<string, LoadedModel>,
   materials: MaterialLibrary,
 ): THREE.Group {
   const group = new THREE.Group();
-  group.name = colonist.id;
-
-  const add = (model: string, tint: string) => {
+  group.name = figure.id;
+  figure.parts.forEach((model, index) => {
     const loaded = models.get(model);
     if (!loaded) {
       console.warn(`Missing colonist part ${model}`);
@@ -21,20 +20,12 @@ export function buildColonist(
       instantiate(loaded, {
         materials,
         stuff: "Fabric",
-        tint: new THREE.Color(tint),
+        tint: new THREE.Color(figure.tints[index] ?? "#ffffff"),
       }),
     );
-  };
-
-  add(`person_${colonist.body}_lower`, colonist.pants);
-  add(`person_${colonist.body}_upper`, colonist.shirt);
-  add("person_head", colonist.skin);
-  add("person_face", "#ffffff");
-  add(`person_hair_${colonist.hair}`, colonist.hairColor);
-  if (colonist.beard) add("person_beard_goatee", colonist.hairColor);
-  if (colonist.hat) add("person_hat_cap", colonist.hatColor ?? colonist.shirt);
-
-  group.position.set(colonist.x + 0.5, 0, colonist.z + 0.5);
+  });
+  group.position.set(figure.x + 0.5, 0, figure.z + 0.5);
+  group.rotation.y = THREE.MathUtils.degToRad(figure.yaw ?? 0);
   return group;
 }
 

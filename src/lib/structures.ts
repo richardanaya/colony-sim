@@ -8,17 +8,33 @@ const ASSET = `${ISORIM}/textures`;
 const WALL_H = 1.2;
 const SIDE_TEX_H = 1.25;
 
-const WALL_FILES: Record<WallKind, { side: string; top: string; color: number }> = {
-  planks: { side: "walls/PlanksSide.png", top: "walls/PlanksTop.png", color: 0xc48a52 },
-  bricks: { side: "walls/BricksSide.png", top: "walls/BricksTop.png", color: 0xb56a48 },
-  stone: { side: "walls/SmoothStoneSide.png", top: "walls/SmoothStoneTop.png", color: 0xc8c2b6 },
+const WALL_FILES: Record<WallKind, { side: string; top: string; color: number; height: number }> = {
+  planks: { side: "walls/PlanksSide.png", top: "walls/PlanksTop.png", color: 0xc48a52, height: WALL_H },
+  bricks: { side: "walls/BricksSide.png", top: "walls/BricksTop.png", color: 0xb56a48, height: WALL_H },
+  stone: { side: "walls/SmoothStoneSide.png", top: "walls/SmoothStoneTop.png", color: 0xc8c2b6, height: WALL_H },
+  metal: { side: "walls/MetalSide.png", top: "walls/MetalTop.png", color: 0x8e98a4, height: WALL_H },
+  rock: { side: "walls/RockSide.png", top: "walls/RockTop.png", color: 0x9a9186, height: WALL_H },
+  rockOre: { side: "walls/RockOreSide.png", top: "walls/RockOreTop.png", color: 0x8a7058, height: WALL_H },
+  sandbags: { side: "walls/SandbagsSide.png", top: "walls/SandbagsTop.png", color: 0xc4b48a, height: 0.55 },
 };
 
 const ROOF_FILES = {
   terracotta: { file: "roofs/Terracotta.png", color: 0xc4623c },
   thatch: { file: "roofs/Thatch.png", color: 0xc4a15a },
   tin: { file: "roofs/Tin.png", color: 0x8e98a4 },
+  slate: { file: "roofs/Slate.png", color: 0x5e6770 },
 } as const;
+
+const INTERIOR: ReadonlySet<string> = new Set([
+  "woodFloor",
+  "stoneTile",
+  "carpet",
+  "concrete",
+  "flagstone",
+  "metalFloor",
+  "sterile",
+  "roughHewn",
+]);
 
 export interface CutawayPiece {
   object: THREE.Object3D;
@@ -49,12 +65,13 @@ export function buildStructures(colony: Colony): StructureResult {
 
   for (const wall of colony.walls) {
     const { x, z, kind } = wall;
+    const height = WALL_FILES[kind].height;
     const sides = new THREE.Mesh(
-      wallSidesGeometry(x, z, WALL_H, walls),
+      wallSidesGeometry(x, z, height, walls),
       new THREE.MeshLambertMaterial({ color: WALL_FILES[kind].color, map: sideTex[kind] }),
     );
     const top = new THREE.Mesh(
-      wallTopGeometry(x, z, WALL_H),
+      wallTopGeometry(x, z, height),
       new THREE.MeshLambertMaterial({ color: WALL_FILES[kind].color, map: topTex[kind] }),
     );
     sides.castShadow = true;
@@ -98,7 +115,7 @@ function interiorCells(colony: Colony): Set<string> {
   for (let z = 0; z < colony.height; z++) {
     for (let x = 0; x < colony.width; x++) {
       const kind = colony.terrain[z * colony.width + x];
-      if (kind === "woodFloor" || kind === "stoneTile") cells.add(`${x},${z}`);
+      if (INTERIOR.has(kind)) cells.add(`${x},${z}`);
     }
   }
   return cells;

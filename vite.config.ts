@@ -11,7 +11,7 @@ export default defineConfig({
   },
   build: {
     // The Three.js viewer is one chunk, a little over Vite's default 500 kB warning.
-    chunkSizeWarningLimit: 800,
+    chunkSizeWarningLimit: 1400,
     rollupOptions: {
       input: path.resolve(root, "index.dev.html"),
     },

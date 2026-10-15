@@ -2,32 +2,33 @@
 
 Source: [kndzio/IsoRim](https://github.com/kndzio/IsoRim), MIT License. See `THIRD_PARTY_NOTICES.md` at the repo root.
 
-Only files this viewer draws are copied here.
+This folder is the world art the colony draws: every model from IsoRim’s `Models.7z`, and every ground, floor, wall, roof, water, swatch, cliff, and damage texture.
 
 ## Models (`models/*.obj`)
 
-Wavefront OBJ, text. IsoRim generates them with Y up and writes **−Z as north**. This viewer flips Z on load so +Z is north and one unit is one map cell. There is no `.mtl` beside the models in IsoRim’s `Models.7z`; colours and texture names live in `src/data/materials.json`, taken from IsoRim’s `tools/make_models.py`.
+Wavefront OBJ, text. IsoRim generates them with Y up and writes **−Z as north**. This viewer flips Z on load so +Z is north and one unit is one map cell. There is no `.mtl` beside the models in `Models.7z`; colours and texture names live in `src/data/materials.json`, taken from IsoRim’s `tools/make_models.py`.
 
-Materials whose names start with `stuff` are multiplied by the build colour (wood, stone, metal, or a colonist’s clothing). `twig*` pieces are the bare-winter branches and are left out while trees are in leaf.
+Materials whose names start with `stuff` are multiplied by the build colour (wood, stone, metal, or a person’s clothing). `twig*` pieces are the bare-winter branches and are left out while trees are in leaf.
 
-| File | Use |
-| --- | --- |
-| `bed.obj`, `bed_double.obj`, `dresser.obj`, `end_table.obj`, `table_1x2.obj`, `table_2x2.obj`, `stool.obj` | Cabin and yard furniture |
-| `bench_research.obj`, `bench_fueled_stove.obj`, `shelf.obj`, `battery.obj`, `heater.obj` | Workshop |
-| `solar_generator.obj`, `hydroponics.obj`, `plant_pot.obj` | Power and garden |
-| `door_leaf.obj`, `door_lintel.obj`, `column.obj` | Doors (leaf is one half) and porch posts |
-| `fence_post.obj`, `fence_arm.obj` | Garden fence. The arm reaches the cell edge; the viewer stretches it to the next post |
-| `torch_lamp.obj`, `campfire.obj`, `horseshoes_pin.obj`, `sculpture_small_1.obj` | Lights, yard, shrine |
-| `tree_oak_1.obj`, `tree_birch_1.obj`, `tree_pine_1.obj`, `bush_1.obj`, `berry_bush_1.obj`, `boulder_1.obj`, `boulder_3.obj` | Plants and rocks. Trees are about one cell tall in the file and are scaled in the colony data |
-| `person_*_lower.obj`, `person_*_upper.obj`, `person_head.obj`, `person_face.obj`, `person_hair_*.obj`, `person_beard_goatee.obj`, `person_hat_cap.obj` | Colonist parts, assembled and tinted per person |
+People are assembled from `person_*` parts. Animals are a body plus, when the species has one, a leg posed at each hip from IsoRim’s `Defs/Models.xml`. The cobra has no leg mesh. `door_leaf` and `door_lintel` are the doors. Everything else is placed as a prop on the Hearthstead map (`src/data/layout.json`).
 
 ## Textures (`textures/**/*.png`)
 
-| Folder | Format | How it is drawn |
-| --- | --- | --- |
-| `swatches/` | 128×128 PNG, mostly grayscale (Soil and Solar are coloured; Flame and Glow are warm) | Multiplied by the material colour. Repeats once per cell, from the OBJ UVs |
-| `ground/Grass.png`, `Soil.png`, `PackedDirt.png`, `Sand.png` | 1024×1024 PNG, colour | Terrain tiles |
-| `ground/FloorWood.png`, `FloorStoneTile.png` | 1024×1024 PNG, grayscale | Interior floors, tinted wood or stone |
-| `walls/*Side.png`, `*Top.png` | Side 256×160, top 256×256, grayscale PNG | Wall blocks, tinted by kind (planks, bricks, smooth stone). Side art covers 2 cells across and 1.25 up |
-| `roofs/Terracotta.png`, `Thatch.png`, `Tin.png` | 256×256 grayscale PNG | Roof slopes, tinted |
-| `water/Ripples.png` | 256×256 PNG, RGBA, mostly transparent | Animated over a flat pond colour |
+| Folder | How it is drawn |
+| --- | --- |
+| `swatches/` | Multiplied by the material colour. Repeats from the OBJ UVs |
+| `ground/` | Terrain and floors. Grayscale floors are tinted; coloured grounds are used as painted |
+| `walls/` | Wall blocks, tinted by kind. Sandbags are a lower course than the other walls |
+| `roofs/` | Roof slopes, tinted |
+| `water/Ripples.png` | Animated over the pond |
+| `water/Flow.png` | Animated along the mill race |
+| `edge/Strata.png` | The ground skirt around the map |
+| `damage/Marks.png` | Decals on the workshop floor |
+
+## Not copied
+
+These IsoRim images are not colony surfaces:
+
+- `Textures/IsoRim/UI/Roofs.png` and `View3D.png` — toolbar icons
+- `LUTs/*.png` — colour-grading strips for an optional post effect, not albedo maps
+- `About/ModIcon.png` and `About/Preview.png` — mod-listing art

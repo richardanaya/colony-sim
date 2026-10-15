@@ -1,6 +1,15 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 import { PNG } from "pngjs";
 import { smokeTargets } from "./targets.mjs";
+
+const manifestPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../src/data/manifest.json");
+const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8")) as {
+  models: string[];
+  textures: string[];
+};
 
 for (const target of smokeTargets) {
   test(`${target.name} renders with a clean console and no failed requests`, async ({ page }) => {
@@ -62,6 +71,21 @@ for (const target of smokeTargets) {
       const html = await page.content();
       expect(html).toContain('src="./assets/index');
       expect(html).not.toContain("/src/main.ts");
+    }
+
+    const used = await page.evaluate(() => window.__colonyUsed);
+    expect(used, "the scene did not report which assets it used").toBeTruthy();
+    expect(used!.models.slice().sort()).toEqual([...manifest.models].sort());
+    expect(used!.textures.slice().sort()).toEqual([...manifest.textures].sort());
+    for (const name of manifest.models) {
+      const url = [...assetStatus.keys()].find((item) => item.endsWith(`/assets/isorim/models/${name}.obj`));
+      expect(url, `${name}.obj`).toBeTruthy();
+      expect(assetStatus.get(url!), `${name}.obj`).toBe(200);
+    }
+    for (const texture of manifest.textures) {
+      const url = [...assetStatus.keys()].find((item) => item.endsWith(`/assets/isorim/${texture}`));
+      expect(url, texture).toBeTruthy();
+      expect(assetStatus.get(url!), texture).toBe(200);
     }
 
     expect(problems, problems.join("\n")).toEqual([]);
